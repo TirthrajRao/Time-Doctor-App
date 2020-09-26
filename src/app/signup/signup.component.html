@@ -1,0 +1,43 @@
+<div class="main_content">
+	<img src="./assets/bg-1.jpeg">
+	<div class="container content">
+		<div class="card align-items-center" class="p-0">
+			<div class="row card_content">
+				<div class="col-6">
+					<div class="text_title">
+						<img src="./assets/graphic2.svg"> 
+					</div>
+				</div>
+				<div class="col-6 p-3">            
+					<form [formGroup]="registerForm" class="p-5">
+						<h1 class="sign_in_title mb-2">Sign Up</h1>
+						<div class="form-group mb-1">
+							<label>First Name</label>
+							<input type="text" class="form-control" formControlName="firstName" name="firstName">
+						</div>
+						<div class="form-group mb-1">
+							<label>Last Name</label>
+							<input type="text" class="form-control" formControlName="lastName" name="lastName">
+						</div>
+						<div class="form-group mb-1">
+							<label>Email</label>
+							<input type="text" class="form-control" formControlName="email" name="email">
+						</div>
+						<div class="form-group mb-1">
+							<label>Password</label>
+							<input type="password" class="form-control"  name="password" formControlName="password">
+						</div>
+						<div class="form-group mb-1">
+							<label>User Role</label>
+							<input type="text" class="form-control" formControlName="userRole" name="userRole">
+						</div>
+						<div class="text-center">
+							<button type="button" class="btn mb-3 login_button text-white" (click)="signupUser(registerForm.value)" >Sign Up<span class="justify-content-end"><i class="fa fa-angle-right" aria-hidden="true"></i></span>
+							</button>
+						</div>
+					</form>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>

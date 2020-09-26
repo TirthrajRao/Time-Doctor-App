@@ -1,0 +1,58 @@
+.text_title img {
+	border-top-left-radius: 15px;
+	border-bottom-left-radius: 15px;
+}
+
+.content{
+	position: relative;
+	padding-top: 160px;
+}
+
+.card_content{
+	background-color: #a1d0ff;
+}
+
+.card {
+	background-color: white;
+	border-radius: 15px;
+}
+
+.main_content{
+	object-fit: cover;
+	position: relative;
+}
+
+.main_content img {
+	width: 100%;
+	height: 100vh;
+	object-fit: cover;
+	position: absolute;
+}
+
+.sign_in{
+	text-decoration: none;
+	color: black;
+	font-weight: 500;
+}
+
+.sign_in_title {
+	font-weight: 500;
+}
+
+.login_button{
+	width: 100%;
+}
+
+.text_title img {
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+	background-size: cover;
+	position: absolute;	
+}
+
+.btn {
+	background-image: -webkit-linear-gradient(135deg, rgb(101, 84, 241) 100%, 
+		rgb(21, 209, 229) 20%);
+	border-color: none;
+}

@@ -1,0 +1,12 @@
+.logout {
+	background: none; 
+	border: none; 
+	float: right;
+}
+.logout img {
+	width: 100%;
+}
+.screenshot {
+	width: 100%; 
+	margin-top: 20px;
+}
