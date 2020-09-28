@@ -1,6 +1,5 @@
+"use strict";
 function externalFunction() {
-	const path = require("path");
-  var fs = require('fs');
   const {desktopCapturer} = require('electron');
   
       fullscreenScreenshot(function(base64data){

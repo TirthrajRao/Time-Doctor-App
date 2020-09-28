@@ -1,6 +1,6 @@
 {
   "configVersion": 1,
-  "timestamp": 1601300698476,
+  "timestamp": 1601301229015,
   "index": "https://mehulbhatt45.github.io/Time-Doctor-App/index.html",
   "assetGroups": [
     {
@@ -14,7 +14,7 @@
         "https://mehulbhatt45.github.io/Time-Doctor-App/polyfills-es5.f9cbf497ee0b29bf0a76.js",
         "https://mehulbhatt45.github.io/Time-Doctor-App/polyfills.32032eb97db9086b35ca.js",
         "https://mehulbhatt45.github.io/Time-Doctor-App/runtime.458556a34b891ea32398.js",
-        "https://mehulbhatt45.github.io/Time-Doctor-App/scripts.7f012f29dfeb8d44b995.js",
+        "https://mehulbhatt45.github.io/Time-Doctor-App/scripts.204e9e3fa5b4ad84d9fb.js",
         "https://mehulbhatt45.github.io/Time-Doctor-App/styles.397735070bb560aafba0.css"
       ],
       "patterns": []
@@ -52,7 +52,7 @@
     "https://mehulbhatt45.github.io/Time-Doctor-App/assets/bg.jpeg": "062eb59716ce8522e577d5c1495b7eaa0ac6bf89",
     "https://mehulbhatt45.github.io/Time-Doctor-App/assets/exit-1.png": "37a3baf1eaac820bac43b735865e9f07d6514797",
     "https://mehulbhatt45.github.io/Time-Doctor-App/assets/exit.png": "63b31af3e06557607e2c3462ecfcd6ddc213174b",
-    "https://mehulbhatt45.github.io/Time-Doctor-App/assets/externalJs/externalFunction.js": "664cc828d6772aef144f26729f29fa65ac5d03a7",
+    "https://mehulbhatt45.github.io/Time-Doctor-App/assets/externalJs/externalFunction.js": "3b722262c88e85a70398c765b6c211b5a60e0c9c",
     "https://mehulbhatt45.github.io/Time-Doctor-App/assets/graphic2.svg": "205eb5dff7cb00f41d07c47943a6b3cdcad5e00e",
     "https://mehulbhatt45.github.io/Time-Doctor-App/assets/icons/icon-128x128.png": "dae3b6ed49bdaf4327b92531d4b5b4a5d30c7532",
     "https://mehulbhatt45.github.io/Time-Doctor-App/assets/icons/icon-144x144.png": "b0bd89982e08f9bd2b642928f5391915b74799a7",
@@ -67,12 +67,12 @@
     "https://mehulbhatt45.github.io/Time-Doctor-App/favicon.512x512.png": "cfec8168f35ee57fe54821f5851c2f3e5b4bc436",
     "https://mehulbhatt45.github.io/Time-Doctor-App/favicon.ico": "5bf4e2505fe833edc42eca39c7d021eeccb120b1",
     "https://mehulbhatt45.github.io/Time-Doctor-App/favicon.png": "4d4806217eeff1b1817f4cd17488b1e113cf0cde",
-    "https://mehulbhatt45.github.io/Time-Doctor-App/index.html": "42966e4b25ad5987314ac5a3636e17f4cb53e7ff",
+    "https://mehulbhatt45.github.io/Time-Doctor-App/index.html": "894d50aee0468e37132fcac9bc513017e42eaa69",
     "https://mehulbhatt45.github.io/Time-Doctor-App/main.d96675ef1b999c5e948c.js": "cec095b7e3e7e43a885708fdd58256233d25c163",
     "https://mehulbhatt45.github.io/Time-Doctor-App/polyfills-es5.f9cbf497ee0b29bf0a76.js": "884fa64d4c310151969d85cd14b71917afbccbb9",
     "https://mehulbhatt45.github.io/Time-Doctor-App/polyfills.32032eb97db9086b35ca.js": "3e8f2ae52e6ec6d6ea042c79b5df6743c7394367",
     "https://mehulbhatt45.github.io/Time-Doctor-App/runtime.458556a34b891ea32398.js": "a9aafcf49f49145093fc831efd9b8e2f6c71bb9c",
-    "https://mehulbhatt45.github.io/Time-Doctor-App/scripts.7f012f29dfeb8d44b995.js": "bc4a48b24c5ec81d3f529d96d9167b16094e0f3e",
+    "https://mehulbhatt45.github.io/Time-Doctor-App/scripts.204e9e3fa5b4ad84d9fb.js": "a9b73a16254eb6067fa16efd9899b4f52e82039d",
     "https://mehulbhatt45.github.io/Time-Doctor-App/styles.397735070bb560aafba0.css": "a7d8331a7ea0cfeea5bf4a469d4de5ee6044d6f8"
   },
   "navigationUrls": [
