@@ -1,0 +1,96 @@
+{
+  "configVersion": 1,
+  "timestamp": 1601280665405,
+  "index": "https://mehulbhatt45.github.io/Time-Doctor-App/index.html",
+  "assetGroups": [
+    {
+      "name": "app",
+      "installMode": "prefetch",
+      "updateMode": "prefetch",
+      "urls": [
+        "https://mehulbhatt45.github.io/Time-Doctor-App/favicon.ico",
+        "https://mehulbhatt45.github.io/Time-Doctor-App/index.html",
+        "https://mehulbhatt45.github.io/Time-Doctor-App/main.bcfcbf7645ba2d6d49f0.js",
+        "https://mehulbhatt45.github.io/Time-Doctor-App/polyfills-es5.f9cbf497ee0b29bf0a76.js",
+        "https://mehulbhatt45.github.io/Time-Doctor-App/polyfills.32032eb97db9086b35ca.js",
+        "https://mehulbhatt45.github.io/Time-Doctor-App/runtime.458556a34b891ea32398.js",
+        "https://mehulbhatt45.github.io/Time-Doctor-App/scripts.7f012f29dfeb8d44b995.js",
+        "https://mehulbhatt45.github.io/Time-Doctor-App/styles.397735070bb560aafba0.css"
+      ],
+      "patterns": []
+    },
+    {
+      "name": "assets",
+      "installMode": "lazy",
+      "updateMode": "prefetch",
+      "urls": [
+        "https://mehulbhatt45.github.io/Time-Doctor-App/assets/bg-1.jpeg",
+        "https://mehulbhatt45.github.io/Time-Doctor-App/assets/bg.jpeg",
+        "https://mehulbhatt45.github.io/Time-Doctor-App/assets/exit-1.png",
+        "https://mehulbhatt45.github.io/Time-Doctor-App/assets/exit.png",
+        "https://mehulbhatt45.github.io/Time-Doctor-App/assets/externalJs/externalFunction.js",
+        "https://mehulbhatt45.github.io/Time-Doctor-App/assets/graphic2.svg",
+        "https://mehulbhatt45.github.io/Time-Doctor-App/assets/icons/icon-128x128.png",
+        "https://mehulbhatt45.github.io/Time-Doctor-App/assets/icons/icon-144x144.png",
+        "https://mehulbhatt45.github.io/Time-Doctor-App/assets/icons/icon-152x152.png",
+        "https://mehulbhatt45.github.io/Time-Doctor-App/assets/icons/icon-192x192.png",
+        "https://mehulbhatt45.github.io/Time-Doctor-App/assets/icons/icon-384x384.png",
+        "https://mehulbhatt45.github.io/Time-Doctor-App/assets/icons/icon-512x512.png",
+        "https://mehulbhatt45.github.io/Time-Doctor-App/assets/icons/icon-72x72.png",
+        "https://mehulbhatt45.github.io/Time-Doctor-App/assets/icons/icon-96x96.png",
+        "https://mehulbhatt45.github.io/Time-Doctor-App/assets/logo.png",
+        "https://mehulbhatt45.github.io/Time-Doctor-App/favicon.256x256.png",
+        "https://mehulbhatt45.github.io/Time-Doctor-App/favicon.512x512.png",
+        "https://mehulbhatt45.github.io/Time-Doctor-App/favicon.png"
+      ],
+      "patterns": []
+    }
+  ],
+  "dataGroups": [],
+  "hashTable": {
+    "https://mehulbhatt45.github.io/Time-Doctor-App/assets/bg-1.jpeg": "3a6c4236da359bd68e646e783e8aa4360b15b3dd",
+    "https://mehulbhatt45.github.io/Time-Doctor-App/assets/bg.jpeg": "062eb59716ce8522e577d5c1495b7eaa0ac6bf89",
+    "https://mehulbhatt45.github.io/Time-Doctor-App/assets/exit-1.png": "37a3baf1eaac820bac43b735865e9f07d6514797",
+    "https://mehulbhatt45.github.io/Time-Doctor-App/assets/exit.png": "63b31af3e06557607e2c3462ecfcd6ddc213174b",
+    "https://mehulbhatt45.github.io/Time-Doctor-App/assets/externalJs/externalFunction.js": "664cc828d6772aef144f26729f29fa65ac5d03a7",
+    "https://mehulbhatt45.github.io/Time-Doctor-App/assets/graphic2.svg": "205eb5dff7cb00f41d07c47943a6b3cdcad5e00e",
+    "https://mehulbhatt45.github.io/Time-Doctor-App/assets/icons/icon-128x128.png": "dae3b6ed49bdaf4327b92531d4b5b4a5d30c7532",
+    "https://mehulbhatt45.github.io/Time-Doctor-App/assets/icons/icon-144x144.png": "b0bd89982e08f9bd2b642928f5391915b74799a7",
+    "https://mehulbhatt45.github.io/Time-Doctor-App/assets/icons/icon-152x152.png": "7479a9477815dfd9668d60f8b3b2fba709b91310",
+    "https://mehulbhatt45.github.io/Time-Doctor-App/assets/icons/icon-192x192.png": "1abd80d431a237a853ce38147d8c63752f10933b",
+    "https://mehulbhatt45.github.io/Time-Doctor-App/assets/icons/icon-384x384.png": "329749cd6393768d3131ed6304c136b1ca05f2fd",
+    "https://mehulbhatt45.github.io/Time-Doctor-App/assets/icons/icon-512x512.png": "559d9c4318b45a1f2b10596bbb4c960fe521dbcc",
+    "https://mehulbhatt45.github.io/Time-Doctor-App/assets/icons/icon-72x72.png": "c457e56089a36952cd67156f9996bc4ce54a5ed9",
+    "https://mehulbhatt45.github.io/Time-Doctor-App/assets/icons/icon-96x96.png": "3914125a4b445bf111c5627875fc190f560daa41",
+    "https://mehulbhatt45.github.io/Time-Doctor-App/assets/logo.png": "35813ec81173876b5f34adfc477f8ff561e6d40e",
+    "https://mehulbhatt45.github.io/Time-Doctor-App/favicon.256x256.png": "4d4806217eeff1b1817f4cd17488b1e113cf0cde",
+    "https://mehulbhatt45.github.io/Time-Doctor-App/favicon.512x512.png": "cfec8168f35ee57fe54821f5851c2f3e5b4bc436",
+    "https://mehulbhatt45.github.io/Time-Doctor-App/favicon.ico": "5bf4e2505fe833edc42eca39c7d021eeccb120b1",
+    "https://mehulbhatt45.github.io/Time-Doctor-App/favicon.png": "4d4806217eeff1b1817f4cd17488b1e113cf0cde",
+    "https://mehulbhatt45.github.io/Time-Doctor-App/index.html": "7087b609636f64f65532afbaba438f4bbe436dc6",
+    "https://mehulbhatt45.github.io/Time-Doctor-App/main.bcfcbf7645ba2d6d49f0.js": "7422c92cb01ba54613892251d6429bcfc0e9e91a",
+    "https://mehulbhatt45.github.io/Time-Doctor-App/polyfills-es5.f9cbf497ee0b29bf0a76.js": "884fa64d4c310151969d85cd14b71917afbccbb9",
+    "https://mehulbhatt45.github.io/Time-Doctor-App/polyfills.32032eb97db9086b35ca.js": "3e8f2ae52e6ec6d6ea042c79b5df6743c7394367",
+    "https://mehulbhatt45.github.io/Time-Doctor-App/runtime.458556a34b891ea32398.js": "a9aafcf49f49145093fc831efd9b8e2f6c71bb9c",
+    "https://mehulbhatt45.github.io/Time-Doctor-App/scripts.7f012f29dfeb8d44b995.js": "bc4a48b24c5ec81d3f529d96d9167b16094e0f3e",
+    "https://mehulbhatt45.github.io/Time-Doctor-App/styles.397735070bb560aafba0.css": "a7d8331a7ea0cfeea5bf4a469d4de5ee6044d6f8"
+  },
+  "navigationUrls": [
+    {
+      "positive": true,
+      "regex": "^\\/.*$"
+    },
+    {
+      "positive": false,
+      "regex": "^\\/(?:.+\\/)?[^/]*\\.[^/]*$"
+    },
+    {
+      "positive": false,
+      "regex": "^\\/(?:.+\\/)?[^/]*__[^/]*$"
+    },
+    {
+      "positive": false,
+      "regex": "^\\/(?:.+\\/)?[^/]*__[^/]*\\/.*$"
+    }
+  ]
+}
