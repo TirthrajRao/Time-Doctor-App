@@ -30,7 +30,7 @@ export class UserService {
 	}
 
 	loginUser(body ){
-		return this._http.post(  "http://timedoctor.mylionsgroup.com:4444/user/login", body)
+		return this._http.post(  config.baseApiUrl + "user/login", body)
 		.pipe(map(user => {
 			console.log("login user=========>", user);
 			if (user) {
@@ -45,11 +45,11 @@ export class UserService {
 
 	signup(value){
 		console.log("the value in service is ====>", value);
-		return this._http.post(	"http://timedoctor.mylionsgroup.com:4444/user/sign-up" ,value);
+		return this._http.post(	config.baseApiUrl + "user/sign-up" ,value);
 	}	
 
 	uploadImg(formData){
-		return this._http.post<any>('http://timedoctor.mylionsgroup.com:4444/uploadfile', formData);
+		return this._http.post<any>(config.baseApiUrl + 'uploadfile', formData);
 	}
 
 
@@ -62,11 +62,11 @@ export class UserService {
 			id: JSON.parse(localStorage.getItem('currentUser'))._id,
 			time: currentTime
 		}
-		return this._http.post<any>( "http://timedoctor.mylionsgroup.com:4444/upload/image", body);
+		return this._http.post<any>( config.baseApiUrl + "upload/image", body);
 	}
 
 	uploadImage(value){
 		console.log("the value of -----------", value);
-		return this._http.post( 'http://timedoctor.mylionsgroup.com:4444/projects/addPost', value);
+		return this._http.post( config.baseApiUrl + 'projects/addPost', value);
 	}
 }

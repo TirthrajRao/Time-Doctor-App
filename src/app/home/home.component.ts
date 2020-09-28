@@ -18,17 +18,14 @@ export class HomeComponent implements OnInit {
   userInfo = JSON.parse(localStorage.getItem('currentUser'));
   base64data:any;
   baseArray:any = [];
+  second:any;
 
   constructor(public _userService: UserService, public router: Router) { 
   }
 
   ngOnInit() {
     if (this.userInfo) {
-      setInterval(() => {
-        localStorage.removeItem('imgUrl');
-        this.callexternalfunction();
-      }, 60000);
-
+      this.getCurrentDate();        
     }
     else{
       this.router.navigate(['/login']);
@@ -36,10 +33,21 @@ export class HomeComponent implements OnInit {
     }
   }
 
+
+  getCurrentDate() {
+    setInterval(() => {
+      localStorage.removeItem('imgUrl');
+      this.second = moment().format('s');
+      // if (this.second == 0) {
+        this.callexternalfunction();
+      // }
+    }, 100000); 
+
+  }
+
   callexternalfunction(){
     externalFunction();
 
-    console.log("local called");
     setTimeout(() => {
       this.base64data = JSON.parse(localStorage.getItem("imgUrl"));
       console.log("the item get is the ===>", JSON.parse(localStorage.getItem("imgUrl")));
@@ -66,8 +74,7 @@ export class HomeComponent implements OnInit {
   logout(){
     localStorage.removeItem('currentUser');
     localStorage.removeItem('imgUrl');
-    // clearInterval(this.intervalId);
+    clearInterval(this.intervalId);
     this.router.navigate(['login']);
-  }
-
-}
+  }      
+} 
