@@ -1,6 +1,6 @@
 {
   "configVersion": 1,
-  "timestamp": 1601282277679,
+  "timestamp": 1601282407656,
   "index": "https://mehulbhatt45.github.io/Time-Doctor-App/index.html",
   "assetGroups": [
     {
@@ -10,7 +10,7 @@
       "urls": [
         "https://mehulbhatt45.github.io/Time-Doctor-App/favicon.ico",
         "https://mehulbhatt45.github.io/Time-Doctor-App/index.html",
-        "https://mehulbhatt45.github.io/Time-Doctor-App/main.ca32ba5e63c2932dba6c.js",
+        "https://mehulbhatt45.github.io/Time-Doctor-App/main.4d7372eee0db7f63e320.js",
         "https://mehulbhatt45.github.io/Time-Doctor-App/polyfills-es5.f9cbf497ee0b29bf0a76.js",
         "https://mehulbhatt45.github.io/Time-Doctor-App/polyfills.32032eb97db9086b35ca.js",
         "https://mehulbhatt45.github.io/Time-Doctor-App/runtime.458556a34b891ea32398.js",
@@ -67,8 +67,8 @@
     "https://mehulbhatt45.github.io/Time-Doctor-App/favicon.512x512.png": "cfec8168f35ee57fe54821f5851c2f3e5b4bc436",
     "https://mehulbhatt45.github.io/Time-Doctor-App/favicon.ico": "5bf4e2505fe833edc42eca39c7d021eeccb120b1",
     "https://mehulbhatt45.github.io/Time-Doctor-App/favicon.png": "4d4806217eeff1b1817f4cd17488b1e113cf0cde",
-    "https://mehulbhatt45.github.io/Time-Doctor-App/index.html": "ca16a6d2b563cb6cdd14e4a36f8c6322ae7dcb4f",
-    "https://mehulbhatt45.github.io/Time-Doctor-App/main.ca32ba5e63c2932dba6c.js": "ce05d798b4465e24fa7a286d3a47dbb5346664e5",
+    "https://mehulbhatt45.github.io/Time-Doctor-App/index.html": "8cb3ebf1eab1bfe46f1c82d783b5e8433c914e6e",
+    "https://mehulbhatt45.github.io/Time-Doctor-App/main.4d7372eee0db7f63e320.js": "0b553a27123bfbc9447bbbcb9df8c6eb7b6b88fe",
     "https://mehulbhatt45.github.io/Time-Doctor-App/polyfills-es5.f9cbf497ee0b29bf0a76.js": "884fa64d4c310151969d85cd14b71917afbccbb9",
     "https://mehulbhatt45.github.io/Time-Doctor-App/polyfills.32032eb97db9086b35ca.js": "3e8f2ae52e6ec6d6ea042c79b5df6743c7394367",
     "https://mehulbhatt45.github.io/Time-Doctor-App/runtime.458556a34b891ea32398.js": "a9aafcf49f49145093fc831efd9b8e2f6c71bb9c",
