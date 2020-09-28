@@ -1,6 +1,6 @@
 "use strict";
+const {desktopCapturer} = require('electron');
 function externalFunction() {
-  const {desktopCapturer} = require('electron');
   
       fullscreenScreenshot(function(base64data){
                   localStorage.setItem('imgUrl', JSON.stringify(base64data));
