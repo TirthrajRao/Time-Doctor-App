@@ -55,8 +55,6 @@ export class UserService {
 
 	uploadbase64Img(data){
 		var currentTime = moment().format("LTS");
-		console.log("the dates demo is ====>", currentTime);
-
 		var body = {
 			base64image: data,
 			id: JSON.parse(localStorage.getItem('currentUser'))._id,

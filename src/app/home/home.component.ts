@@ -40,8 +40,7 @@ export class HomeComponent implements OnInit {
   }
 
   getCurrentDate() {
-    setInterval(() => {
-      localStorage.removeItem('imgUrl');
+    this.intervalId = setInterval(() => {
       this.second = moment().format('s');
       if (this.second == 0) {
         this.externalFunction();
@@ -117,12 +116,7 @@ export class HomeComponent implements OnInit {
 
   externalFunction() {
     this.fullscreenScreenshot((base64data) => {
-      localStorage.setItem('imgUrl', JSON.stringify(base64data));
-    }, 'image/png');   
-
-    setTimeout(() => {
-      this.base64data = JSON.parse(localStorage.getItem("imgUrl"));
-      console.log("the item get is the ===>", JSON.parse(localStorage.getItem("imgUrl")));
+      this.base64data = base64data;
       this.baseArray.push(this.base64data);
       console.log("the item get is the ===>", this.base64data);
 
@@ -131,21 +125,11 @@ export class HomeComponent implements OnInit {
       }, (err) => {
         console.log("the err is the ==========>", err);
       })
-      this.baseArray.forEach((item, index) => {
-        if (item == null) {
-          console.log("array null");
-        }
-        else{
-          document.getElementById(index).setAttribute("src", this.base64data);
-        }
-      });
-      console.log("the baseArray is the ====>", this.baseArray);
-    }, 500) 
+    }, 'image/png');   
   }
 
   logout(){
     localStorage.removeItem('currentUser');
-    localStorage.removeItem('imgUrl');
     clearInterval(this.intervalId);
     this.router.navigate(['login']);
   }      
