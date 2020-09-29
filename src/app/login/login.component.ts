@@ -13,6 +13,7 @@ export class LoginComponent implements OnInit {
 	isError : boolean = false;
 	isDisable:boolean =false;
 	errorMessage : any;
+	timeString:any;
 
 	constructor(public _userService: UserService, private router: Router) { 
 		this.loginForm = new FormGroup({

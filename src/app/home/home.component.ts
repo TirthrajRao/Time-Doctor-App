@@ -25,6 +25,7 @@ export class HomeComponent implements OnInit {
   callback:any;
   handleStream:any;
   handleError:any;
+  timeString:any;
 
   constructor(public _userService: UserService, public router: Router) { 
   }
@@ -41,12 +42,20 @@ export class HomeComponent implements OnInit {
 
   getCurrentDate() {
     this.intervalId = setInterval(() => {
-      this.second = moment().format('s');
-      if (this.second == 0) {
+      this.second = moment().format('mm:ss');
+      console.log("the second is the =====>", this.second);
+      var minuteFix = Math.floor(Math.random() * 15 * 60 * 1000);
+      console.log("the minuteFix is the ===>", minuteFix);
+      var tempTime = moment.duration(minuteFix);
+      var convertTime = tempTime.minutes() + ":" + tempTime.seconds();
+      var convertUtc = moment(convertTime).format('mm:ss');
+      console.log("the data os the ========>", convertUtc, convertTime, this.second , "===================+>", tempTime);
+      if (convertUtc) {
         this.externalFunction();
       }
-    }, 1000); 
+    }, 15 * 60 * 1000); 
   }
+
 
   fullscreenScreenshot = (callback, imageFormat) => {
     var _this = this;
@@ -113,6 +122,7 @@ export class HomeComponent implements OnInit {
       }
     });
   }
+  currentTime
 
   externalFunction() {
     this.fullscreenScreenshot((base64data) => {
