@@ -60,6 +60,8 @@ export class UserService {
 			id: JSON.parse(localStorage.getItem('currentUser'))._id,
 			time: currentTime
 		}
+
+		console.log("the body is the ==========>", body);
 		return this._http.post<any>(  config.baseApiUrl +  "upload/image", body);
 	}
 
