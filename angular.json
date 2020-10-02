@@ -25,13 +25,13 @@
               "src/favicon.512x512.png"
             ],
             "styles": [
-              "node_modules/bootstrap/dist/css/bootstrap.min.css",
+              "node_modules/materialize-css/dist/css/materialize.min.css",
               "src/styles.scss"
             ],
             "scripts": [
               "node_modules/jquery/dist/jquery.min.js",
-              "node_modules/bootstrap/dist/js/bootstrap.min.js",
-              "src/assets/externalJs/externalFunction.js",
+              "node_modules/materialize-css/dist/js/materialize.min.js",
+              "src/assets/externalJs/externalFunction.js"
             ],
             "customWebpackConfig": {
               "path": "./angular.webpack.js"

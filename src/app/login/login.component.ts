@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import {FormControl, Validators, FormGroup, FormBuilder} from '@angular/forms';
+import { FormControl, Validators, FormGroup, FormBuilder } from '@angular/forms';
 import { UserService } from '../services/user.service';
 import { Router } from '@angular/router';
 
@@ -10,35 +10,35 @@ import { Router } from '@angular/router';
 })
 export class LoginComponent implements OnInit {
 	loginForm: FormGroup;
-	isError : boolean = false;
-	isDisable:boolean =false;
-	errorMessage : any;
-	timeString:any;
+	isError: boolean = false;
+	isDisable: boolean = false;
+	errorMessage: any;
+	timeString: any;
 
-	constructor(public _userService: UserService, private router: Router) { 
+	constructor(public _userService: UserService, private router: Router) {
 		this.loginForm = new FormGroup({
 			email: new FormControl('', Validators.required),
-			password: new FormControl('',Validators.required)
+			password: new FormControl('', Validators.required)
 		});
 	}
 
 	ngOnInit() {
 	}
 
-	loginUser(value){
+	loginUser(value) {
 		this._userService.loginUser(value).subscribe((response) => {
-			console.log("successfull login"  , response);
+			console.log("successfull login", response);
 			this.isDisable = false;
 			this.isError = false;
 			localStorage.setItem('currentUser', JSON.stringify(response));
 			this.router.navigate(['home']);
-		},(err) => {
+		}, (err) => {
 			console.log(err.status);
-			if(err.status == 400){
+			if (err.status == 400 || err.status == 401) {
 				this.errorMessage = "Please Check your Email/Password";
 			}
 			this.isError = true;
-			console.log("err in login " , err);
+			console.log("err in login ", err);
 		})
 		console.log(value);
 		this.loginForm.reset();

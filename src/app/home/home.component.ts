@@ -4,6 +4,7 @@ import { FormGroup, FormBuilder, FormControl, Validators } from '@angular/forms'
 import { Router } from '@angular/router';
 import { saveAs } from 'file-saver';
 import * as moment from 'moment';
+import { Observable, Observer } from 'rxjs';
 declare var require: any;
 declare var externalFunction: any;
 // const path = require("path");
@@ -21,129 +22,151 @@ export class HomeComponent implements OnInit {
   userInfo = JSON.parse(localStorage.getItem('currentUser'));
   base64data: any;
   baseArray: any = [];
-  second: any;
   callback: any;
   handleStream: any;
   handleError: any;
   timeString: any;
 
+  timeoutId;
+  seconds = 0;
+  minutes = 0;
+  hours = 0;
+  running = false;
+
   constructor(public _userService: UserService, public router: Router) {
+    localStorage.setItem('isRunning', JSON.stringify(this.running));
   }
 
   ngOnInit() {
-    if (this.userInfo) {
-      this.getCurrentDate();
-    }
-    else {
+    if (!this.userInfo) {
       this.router.navigate(['/login']);
       console.log("not working");
     }
-
   }
-  convertTime
-  getCurrentDate() {
+
+  startCapturing() {
     this.intervalId = setInterval(() => {
-      this.second = moment().format('mm:ss');
-      console.log("the second is the =====>", this.second);
-      var minuteFix = Math.floor(Math.random() * 1 * 60 * 1000);
-      console.log("the minuteFix is the ===>", minuteFix);
-      var tempTime = moment.duration(minuteFix);
-      this.convertTime = tempTime.minutes() + ":" + tempTime.seconds();
-      var convertUtc = moment(this.convertTime).format('mm:ss');
-      console.log("the data os the ========>", convertUtc, this.convertTime, this.second, "===================+>", tempTime);
-      this.base64data = JSON.parse(localStorage.getItem("imgUrl"));
-      // console.log("the item get is the ===>", JSON.parse(localStorage.getItem("imgUrl")));
-      // if (this.convertTime) {
-
-      // this.external();
-      // }
-    }, 10000);
+      if (this.running) {
+        this.external();
+      }
+    }, 1000 * 10);
   }
 
+  dataURItoBlob(dataURI: string): Observable<Blob> {
+    return Observable.create((observer: Observer<Blob>) => {
+      const byteString: string = atob(dataURI);
+      const arrayBuffer: ArrayBuffer = new ArrayBuffer(byteString.length);
+      const int8Array: Uint8Array = new Uint8Array(arrayBuffer);
+      for (let i = 0; i < byteString.length; i++) {
+        int8Array[i] = byteString.charCodeAt(i);
+      }
+      const blob = new Blob([int8Array], { type: "image/png" });
+      observer.next(blob);
+      observer.complete();
+    });
+  }
 
-  currentTime
-  generateRandomDate() {
+  b64toBlob(b64Data, contentType?, sliceSize?) {
+    contentType = contentType || '';
+    sliceSize = sliceSize || 512;
 
-    // var timer = setInterval(clock, 1000);
+    const byteCharacters = atob(b64Data);
+    const byteArrays = [];
 
-    // function clock() {
-    //   msec += 1;
-    //   if (msec == 60) {
-    //     sec += 1;
-    //     msec = 0;
-    //     if (sec == 60) {
-    //       sec = 0;
-    //       min += 1;
-    //       if (sec % 2 == 0) {
-    //         alert("Pair");
-    //       }
-    //     }
-    //   }
-    //   document.getElementById("timer").innerHTML = min + ":" + sec + ":" + msec;
-    // }
+    for (let offset = 0; offset < byteCharacters.length; offset += sliceSize) {
+      const slice = byteCharacters.slice(offset, offset + sliceSize);
 
-    var h1 = document.getElementsByTagName('h1')[0],
-      start = document.getElementById('start'),
-      stop = document.getElementById('stop'),
-      clear = document.getElementById('clear'),
-      seconds = 0, minutes = 0, hours = 0,
-      t;
-
-    function add() {
-      seconds++;
-      if (seconds >= 60) {
-        seconds = 0;
-        minutes++;
-        if (minutes >= 60) {
-          minutes = 0;
-          hours++;
-        }
+      const byteNumbers = new Array(slice.length);
+      for (let i = 0; i < slice.length; i++) {
+        byteNumbers[i] = slice.charCodeAt(i);
       }
 
-      h1.textContent = (hours ? (hours > 9 ? hours : "0" + hours) : "00") + ":" + (minutes ? (minutes > 9 ? minutes : "0" + minutes) : "00") + ":" + (seconds > 9 ? seconds : "0" + seconds);
+      const byteArray = new Uint8Array(byteNumbers);
 
-      timer();
-    }
-    function timer() {
-      t = setTimeout(add, 1000);
-    }
-    timer();
-
-
-    /* Start button */
-    start.onclick = timer;
-
-    /* Stop button */
-    stop.onclick = function () {
-      clearTimeout(t);
+      byteArrays.push(byteArray);
     }
 
-    /* Clear button */
-    clear.onclick = function () {
-      h1.textContent = "00:00:00";
-      seconds = 0; minutes = 0; hours = 0;
-    }
-
+    const blob = new Blob(byteArrays, { type: contentType });
+    return blob;
   }
 
-  external() {
-    externalFunction();
-    setTimeout(() => {
-      this.baseArray.push(this.base64data);
-      console.log("the item get is the ===>", this.base64data);
+  getPaddedVal(val) {
+    return '0' + val;
+  }
 
-      this._userService.uploadbase64Img(this.base64data).subscribe((res) => {
+  async external() {
+    await externalFunction();
+    setTimeout(() => {
+      this.base64data = JSON.parse(localStorage.getItem("imgUrl")).split(',').reverse()[0];
+      console.log(this.base64data);
+      const imageBlob: Blob = this.b64toBlob(this.base64data, "image/png");
+      const imageName: string = `${JSON.parse(localStorage.getItem('currentUser')).name}-${moment().format("DD-MM-yyyy-HH-mm-ss")}`;
+      const imageFile: File = new File([imageBlob], imageName, {
+        type: "image/png"
+      });
+      console.log(imageFile);
+      const formData = new FormData();
+      formData.append('userId', JSON.parse(localStorage.getItem('currentUser'))._id);
+      formData.append('time', `${String(this.hours).length === 1 ? this.getPaddedVal(this.hours) : this.hours}-${String(this.minutes).length === 1 ? this.getPaddedVal(this.minutes) : this.minutes}-${String(this.seconds).length === 1 ? this.getPaddedVal(this.seconds) : this.seconds}`);
+      formData.append('uploadFile', imageFile);
+
+      this._userService.uploadbase64Img(formData).subscribe((res) => {
         console.log("the res is the ==========>", res);
       }, (err) => {
         console.log("the err is the ==========>", err);
       })
-    }, 500);
+
+    }, 1000);
   }
 
   logout() {
     localStorage.removeItem('currentUser');
     clearInterval(this.intervalId);
     this.router.navigate(['login']);
+  }
+
+  timer() {
+    this.timeoutId = setTimeout(() => {
+      this.updateTime();
+      this.timer();
+    }, 1000);
+  }
+
+  updateTime() {
+    this.seconds++;
+    if (this.seconds === 60) {
+      this.seconds = 0;
+      this.minutes++;
+    }
+
+    if (this.minutes === 60) {
+      this.minutes = 0;
+      this.hours++;
+    }
+
+
+  }
+
+  stop() {
+    clearTimeout(this.timeoutId);
+    this.running = false;
+    localStorage.setItem('isRunning', JSON.stringify(this.running));
+    clearInterval(this.intervalId);
+  }
+
+  start() {
+    this.timer();
+    this.running = true;
+    localStorage.setItem('isRunning', JSON.stringify(this.running));
+    this.startCapturing();
+  }
+
+  clear() {
+    this.seconds = 0;
+    this.minutes = 0;
+    this.running = false;
+    localStorage.setItem('isRunning', JSON.stringify(this.running));
+    clearInterval(this.intervalId);
   }
 }
 

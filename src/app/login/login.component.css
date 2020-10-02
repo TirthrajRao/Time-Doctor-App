@@ -1,58 +1,30 @@
-.text_title img {
-	border-top-left-radius: 15px;
-	border-bottom-left-radius: 15px;
+.login_page {
+    background-image: url(/assets/images/web_bg.jpg);
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: cover;
 }
-
-.content{
-	position: relative;
-	padding-top: 160px;
+.login_form_box{
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
 }
-
-.card_content{
-	background-color: #a1d0ff;
+.login_form_box form{
+    background-color: #fff;
+    max-width: 600px;
+    width: 100%;
+    padding: 20px 5px;
+    margin: auto;
+    border-radius: 15px;
 }
-
-.card {
-	background-color: white;
-	border-radius: 15px;
+.login_button_div {
+    text-align: center;
 }
-
-.main_content{
-	object-fit: cover;
-	position: relative;
+.login_button_div button {
+    padding: 10px 20px;
+    font-size: 16px;
 }
-
-.main_content img {
-	width: 100%;
-	height: 100vh;
-	object-fit: cover;
-	position: absolute;
-}
-
-.sign_in{
-	text-decoration: none;
-	color: black;
-	font-weight: 500;
-}
-
-.sign_in_title {
-	font-weight: 500;
-}
-
-.login_button{
-	width: 100%;
-}
-
-.text_title img {
-	width: 100%;
-	height: 100%;
-	object-fit: cover;
-	background-size: cover;
-	position: absolute;	
-}
-
-.btn {
-	background-image: -webkit-linear-gradient(135deg, rgb(101, 84, 241) 100%, 
-		rgb(21, 209, 229) 20%);
-	border-color: none;
+.error_text{
+	color: red;
 }

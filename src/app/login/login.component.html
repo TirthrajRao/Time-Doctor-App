@@ -1,14 +1,14 @@
-<div class="main_content">
+<!-- <div class="main_content">
   <img src="./assets/bg-1.jpeg">
   <div class="container content">
     <div class="card align-items-center" class="p-0">
       <div class="row card_content">
-        <div class="col-6">
+        <div class="col s6">
           <div class="text_title">
             <img src="./assets/graphic2.svg"> 
           </div>
         </div>
-        <div class="col-6 p-4">            
+        <div class="col s6 p-4">            
           <form [formGroup]="loginForm" class="p-5">
             <h1 class="sign_in_title mb-3">Sign In</h1>
             <div class="form-group">
@@ -20,14 +20,39 @@
               <input type="password" class="form-control"  name="password" formControlName="password">
             </div>
             <div class="text-center">
-              <button type="button" class="btn mb-3 login_button text-white" (click)="loginUser(loginForm.value)" [disabled]= "isDisable || loginForm.invalid">Sign-In<span class="justify-content-end"><i class="fa fa-angle-right" aria-hidden="true"></i></span>
+              <button type="button" class="btn mb-3 login_button text-white">Sign-In<span class="justify-content-end"><i class="fa fa-angle-right" aria-hidden="true"></i></span>
               </button>
             </div>
-            <p class="text-center mt-4 mb-5">Do You Want to<a class="sign_in" routerLink="/signup"> Sign-Up ?</a></p>  
           <p class="text-center"><span *ngIf="isError" class="h6 font-weight-bold text-danger text-center">{{errorMessage}}</span></p>
           </form>
         </div>
       </div>
     </div>
+  </div>
+</div> -->
+
+<div class="login_page">
+  <div class="container">
+      <div class="login_form_box">
+          <form [formGroup]='loginForm' class="z-depth-2">
+              <h3 class="page_title">Login</h3>
+              <div class="row">
+                  <div class="input-field col s12">
+                      <i class="material-icons prefix">email</i>
+                      <input id="icon_email" type="email" class="validate" autocomplete="off" formControlName="email">
+                      <label for="icon_email">Email</label>
+                  </div>
+                  <div class="input-field col s12">
+                      <i class="material-icons prefix">lock</i>
+                      <input id="icon_password" type="password" class="validate" autocomplete="off" formControlName="password">
+                      <label for="icon_password">Password</label>
+                  </div>
+                  <div class="col s12 login_button_div">
+                      <button type="button" (click)="loginUser(loginForm.value)" [disabled]= "isDisable || loginForm.invalid" class="button_primary waves-effect waves-light">Login</button>
+                      <p *ngIf="isError"  class="error_text"><span class="h6 font-weight-bold text-danger text-center">{{errorMessage}}</span></p>
+                  </div>
+              </div>
+          </form>
+      </div>
   </div>
 </div>

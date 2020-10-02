@@ -1,7 +1,121 @@
-/* You can add global styles to this file, and also import other style files */
-html, body {
-  margin: 0;
-  padding: 0;
+@import url('https://fonts.googleapis.com/css2?family=Carter+One&family=Raleway:wght@400;600;700&display=swap');
 
-  height: 100%;
+@font-face {
+  font-family: 'Material Icons';
+  font-style: normal;
+  font-weight: 400;
+  src: url(https://fonts.gstatic.com/s/materialicons/v55/flUhRq6tzZclQEJ-Vdg-IuiaDsNc.woff2) format('woff2');
+}
+.material-icons {
+  font-family: 'Material Icons';
+  font-weight: normal;
+  font-style: normal;
+  font-size: 24px;
+  line-height: 1;
+  letter-spacing: normal;
+  text-transform: none;
+  display: inline-block;
+  white-space: nowrap;
+  word-wrap: normal;
+  direction: ltr;
+  -webkit-font-feature-settings: 'liga';
+  -webkit-font-smoothing: antialiased;
+}
+*{
+  box-sizing: border-box;
+}
+body{
+  font-family: 'Raleway', sans-serif;
+}
+a{
+  text-decoration:none !important;
+}
+h1, h2, h3, h4, h5, h6 {
+  font-family: 'Carter One', cursive;
+  margin: 0px;
+}
+button{
+  outline: none !important;
+  border: none !important;
+}
+button[disabled] {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+button[disabled]:after{
+  display: none !important;
+}
+.row{
+  margin-bottom: 0px;
+}
+.input-field .prefix.active{
+  color: #3998c5;
+}
+input:not([type]):focus:not([readonly]),
+input[type=text]:not(.browser-default):focus:not([readonly]),
+input[type=password]:not(.browser-default):focus:not([readonly]),
+input[type=email]:not(.browser-default):focus:not([readonly]),
+input[type=url]:not(.browser-default):focus:not([readonly]),
+input[type=time]:not(.browser-default):focus:not([readonly]),
+input[type=date]:not(.browser-default):focus:not([readonly]),
+input[type=datetime]:not(.browser-default):focus:not([readonly]),
+input[type=datetime-local]:not(.browser-default):focus:not([readonly]),
+input[type=tel]:not(.browser-default):focus:not([readonly]),
+input[type=number]:not(.browser-default):focus:not([readonly]),
+input[type=search]:not(.browser-default):focus:not([readonly]),
+textarea.materialize-textarea:focus:not([readonly]){
+  border-bottom: 1px solid #3998c5;
+  box-shadow: 0 1px 0 0 #3998c5;
+}
+.button_secondary {
+  background-color: #01023f !important;
+  color: #fff;
+  border-radius: 5px;
+  font-weight: 700;
+  position: relative;
+  overflow: hidden;
+}
+.button_primary {
+  background-color: #3998c5 !important;
+  color: #fff;
+  border-radius: 5px;
+  font-weight: 700;
+  position: relative;
+  overflow: hidden;
+}
+.button_secondary:after,
+.button_primary:after {
+  background: #fff;
+  content: "";
+  height: 200%;
+  left: -75%;
+  opacity: .2;
+  position: absolute;
+  top: -50%;
+  transform: rotate(35deg);
+  transition: all 0s;
+  width: 25%;
+}
+.button_secondary:hover:after,
+.button_primary:hover:after {
+  left: 150%;
+  transition: all 1s;
+}
+.page_title {
+  color: #01023f;
+  text-align: center;
+  position: relative;
+  padding-bottom: 40px;
+}
+.page_title:after{
+  content: "";
+  background-image: url(./assets/images/title_bottom.png);
+  background-repeat: no-repeat;
+  background-position: bottom center;
+  background-size: auto 25px;
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 5px;
+  height: 25px;
 }

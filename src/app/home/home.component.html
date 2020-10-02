@@ -1,44 +1,33 @@
-<div class="container" *ngIf="userInfo">
-	<div class="row">
-		<div class="mt-5 m-auto col-10">
-			<h3>Welcome to Time-Doctor Application</h3>
-		</div>
-		<div class="mt-5 m-auto col-2"><button type="button" class="logout" (click)="logout()"><img src="./assets/exit-1.png"></button></div>
+<header>
+	<div class="header_content">
+		<a class="logo_box">
+			<img src="assets/images/raoinfotech.png" alt="logo image">
+		</a>
+		<a (click)="logout()" class="logout_button z-depth-2 button_secondary waves-effect waves-light">Logout</a>
 	</div>
-	<!-- <div class="row">
-		<div class="col-12" *ngFor="let img of baseArray; let i = index" class="scrrenshot">									
-			<img [src]="img" class="img-thumbnail">
+</header>
+<section class="welcome_section">
+	<div class="container">
+		<h3 class="page_title">Welcome to Time-Doctor Application</h3>
+		<div class="time_control_box z-depth-2">
+			<h2>{{hours | numpad:2}}:{{minutes | numpad:2}}:{{seconds | numpad:2}}</h2>
+			<div class="row">
+				<div class="col s4">
+					<a class="timer_button z-depth-2 button_primary waves-effect waves-light" (click)="start()" id="start">start</a>
+				</div>
+				<div class="col s4">
+					<a class="timer_button z-depth-2 button_primary waves-effect waves-light" (click)="stop()" id="stop">stop</a>
+				</div>
+				<div class="col s4">
+					<a class="timer_button z-depth-2 button_primary waves-effect waves-light" (click)="clear()" id="clear">clear</a>
+				</div>
+			</div>
 		</div>
-	</div> -->
-
+	</div>
+</section>
+<div class="container align-content-center">
+	<div class="row justify-content-center">
+	</div>
+	<div class="row justify-content-around">
+	</div>
 </div>
-<!-- <div class="container">
-	<section class="timer-counter-label">
-		<div *ngIf="counter" [ngClass]="{blink: !running}">
-			<span>{{minutes}}:</span><span>{{seconds}}:</span> <span>{{milliseconds}}</span>
-		</div>
-		<div *ngIf="!counter">
-			<span>{{minutes}}:</span><span>{{seconds}}:</span> <span>{{milliseconds}}</span>
-		</div>
-	</section>
-	<div class="timer-button-container">
-		<button class="timer-button" (click)="startTimer()">
-			start
-		</button>
-		<button [disabled]='!counter' [ngClass]="{'disabled': !counter}" class="timer-button" (click)="lapTimeSplit()">Lap</button>
-		<button class="timer-button" (click)="clearTimer()">Clear</button>
-		<br>
-		<div *ngFor="let lap of laps;let i = index">
-			<div> &#9873; <b>Lap {{i+1}} ::</b>  {{lap}}</div>
-			<br>
-		</div>
-	</div>
-</div> -->
-<h1><time>00:00:00</time></h1>
-<button id="start" (click)="generateRandomDate()">start</button>
-<button id="stop">stop</button>
-<button id="clear">clear</button>
-
-
-
-<!-- <p>{{timeLeft}} Seconds Left....</p> s -->

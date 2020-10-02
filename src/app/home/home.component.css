@@ -1,58 +1,55 @@
-.logout {
-	background: none; 
-	border: none; 
-	float: right;
+.header_content {
+  background: rgba(204, 211, 253, 1);
+  background: -moz-linear-gradient(left, rgba(204, 211, 253, 1) 0%, rgba(162, 142, 222, 1) 100%);
+  background: -webkit-gradient(
+    left top,
+    right top,
+    color-stop(0%, rgba(204, 211, 253, 1)),
+    color-stop(100%, rgba(162, 142, 222, 1))
+  );
+  background: -webkit-linear-gradient(left, rgba(204, 211, 253, 1) 0%, rgba(162, 142, 222, 1) 100%);
+  background: -o-linear-gradient(left, rgba(204, 211, 253, 1) 0%, rgba(162, 142, 222, 1) 100%);
+  background: -ms-linear-gradient(left, rgba(204, 211, 253, 1) 0%, rgba(162, 142, 222, 1) 100%);
+  background: linear-gradient(to right, rgba(204, 211, 253, 1) 0%, rgba(162, 142, 222, 1) 100%);
+  filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#ccd3fd', endColorstr='#a28ede', GradientType=1 );
+  display: table;
+  width: 100%;
+  padding: 20px;
 }
-.logout img {
-	width: 100%;
+.header_content a.logo_box {
+  display: inline-block;
+  float: left;
 }
-.screenshot {
-	width: 100%;
-	margin-top: 20px;
+.header_content a.logo_box img {
+  max-height: 50px;
+  float: left;
 }
-
-.screenshot img{
-	width: 100%;
+.header_content a.logout_button {
+  float: right;
+  padding: 10px 20px;
+  margin: 4px 0px 4px 20px;
 }
-
-  .timer-counter-label{
-    align-items: center;
-    font-size: 27px;
-  }
-  .timer-start-text{
-    font-size: 20px;
-  }
-  .timer-button{
-        outline: none;
-        cursor: pointer;
-        border: 1px solid #007bff;
-        border-radius: 5px;
-        background: #007bff;
-        color: black;
-        font-size: 20px;
-        padding: 10px;
-        margin: 5px 10px;
-        min-width: 100px;
-  }
-  .timer-button:hover{
-    background: #0069d9;
-    border: 1px solid #0062cc;
-  }
-  .disabled{
-    cursor: not-allowed;
-    background-color: #6c757d;
-    border:1px solid #6c757d;
-  }
-  .disabled:hover{
-    cursor: not-allowed;
-    background-color: #5a6268;
-    border:1px solid #545b62;
-  }
-  .blink {
-    animation: blinker 1s linear infinite;
-  }
-  @keyframes blinker {
-    50% {
-      opacity: 0;
-    }
-  }
+.welcome_section {
+  background-image: url(/assets/images/web_bg.jpg);
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: cover;
+  min-height: calc(100vh - 90px);
+  padding: 70px 0px;
+  background-attachment: fixed;
+}
+.time_control_box {
+  background-color: #fff;
+  max-width: 600px;
+  width: 100%;
+  padding: 50px 15px;
+  margin: 50px auto 0px;
+  border-radius: 15px;
+  text-align: center;
+}
+.timer_button{
+  padding: 10px 20px;
+  margin-top: 50px;
+  width: 100%;
+  text-transform: capitalize;
+}
