@@ -4,12 +4,10 @@ import { FormGroup, FormBuilder, FormControl, Validators } from '@angular/forms'
 import { Router } from '@angular/router';
 import { saveAs } from 'file-saver';
 import * as moment from 'moment';
+import * as _ from 'lodash';
 import { Observable, Observer } from 'rxjs';
 declare var require: any;
 declare var externalFunction: any;
-// const path = require("path");
-// var fs = require('fs');
-// const {desktopCapturer} = require('electron');
 
 @Component({
   selector: 'app-home',
@@ -19,6 +17,7 @@ declare var externalFunction: any;
 
 export class HomeComponent implements OnInit {
   intervalId: any;
+  timeOutId: any;
   userInfo = JSON.parse(localStorage.getItem('currentUser'));
   base64data: any;
   baseArray: any = [];
@@ -27,12 +26,12 @@ export class HomeComponent implements OnInit {
   handleError: any;
   timeString: any;
 
-  timeoutId;
+  timeout: any;
   seconds = 0;
   minutes = 0;
   hours = 0;
   running = false;
-
+  isFirst = true;
   constructor(public _userService: UserService, public router: Router) {
     localStorage.setItem('isRunning', JSON.stringify(this.running));
   }
@@ -40,16 +39,27 @@ export class HomeComponent implements OnInit {
   ngOnInit() {
     if (!this.userInfo) {
       this.router.navigate(['/login']);
-      console.log("not working");
+      // console.log("not working");
     }
   }
 
   startCapturing() {
+    if (this.isFirst) {
+      const randomTime = _.random(0, 1000 * 60 * 15);
+      this.timeout = setTimeout(() => {
+        if (this.running) {
+          this.external();
+        }
+      }, randomTime);
+    }
     this.intervalId = setInterval(() => {
-      if (this.running) {
-        this.external();
-      }
-    }, 1000 * 10);
+      const randomTime = _.random(0, 1000 * 60 * 15);
+      this.timeout = setTimeout(() => {
+        if (this.running) {
+          this.external();
+        }
+      }, randomTime);
+    }, 1000 * 60 * 15);
   }
 
   dataURItoBlob(dataURI: string): Observable<Blob> {
@@ -95,28 +105,33 @@ export class HomeComponent implements OnInit {
   }
 
   async external() {
+    // await this.fullscreenScreenshot((base64data) => {
+    //   localStorage.setItem('imgUrl', JSON.stringify(base64data));
+    // }, 'image/png');
     await externalFunction();
     setTimeout(() => {
       this.base64data = JSON.parse(localStorage.getItem("imgUrl")).split(',').reverse()[0];
-      console.log(this.base64data);
+      // console.log(this.base64data);
       const imageBlob: Blob = this.b64toBlob(this.base64data, "image/png");
       const imageName: string = `${JSON.parse(localStorage.getItem('currentUser')).name}-${moment().format("DD-MM-yyyy-HH-mm-ss")}`;
       const imageFile: File = new File([imageBlob], imageName, {
         type: "image/png"
       });
-      console.log(imageFile);
+      // console.log(imageFile);
       const formData = new FormData();
       formData.append('userId', JSON.parse(localStorage.getItem('currentUser'))._id);
       formData.append('time', `${String(this.hours).length === 1 ? this.getPaddedVal(this.hours) : this.hours}-${String(this.minutes).length === 1 ? this.getPaddedVal(this.minutes) : this.minutes}-${String(this.seconds).length === 1 ? this.getPaddedVal(this.seconds) : this.seconds}`);
       formData.append('uploadFile', imageFile);
 
       this._userService.uploadbase64Img(formData).subscribe((res) => {
-        console.log("the res is the ==========>", res);
+        // console.log("the res is the ==========>", res);
+        clearTimeout(this.timeout);
+        this.isFirst = false;
       }, (err) => {
-        console.log("the err is the ==========>", err);
+        // console.log("the err is the ==========>", err);
       })
 
-    }, 1000);
+    }, 500);
   }
 
   logout() {
@@ -126,7 +141,7 @@ export class HomeComponent implements OnInit {
   }
 
   timer() {
-    this.timeoutId = setTimeout(() => {
+    this.timeOutId = setTimeout(() => {
       this.updateTime();
       this.timer();
     }, 1000);
@@ -148,7 +163,7 @@ export class HomeComponent implements OnInit {
   }
 
   stop() {
-    clearTimeout(this.timeoutId);
+    clearTimeout(this.timeOutId);
     this.running = false;
     localStorage.setItem('isRunning', JSON.stringify(this.running));
     clearInterval(this.intervalId);
@@ -168,72 +183,71 @@ export class HomeComponent implements OnInit {
     localStorage.setItem('isRunning', JSON.stringify(this.running));
     clearInterval(this.intervalId);
   }
+  // fullscreenScreenshot = (callback, imageFormat) => {
+  //   var _this = this;
+  //   this.callback = callback;
+  //   imageFormat = imageFormat || 'image/jpeg';
+  //   this.handleStream = (stream) => {
+  //     var video = document.createElement('video');
+  //     video.style.cssText = 'position:absolute;top:-10000px;left:-10000px;';
+
+  //     video.onloadedmetadata = function () {
+  //       video.play();
+
+  //       var canvas = document.createElement('canvas');
+  //       canvas.id = "canvas";
+  //       var ctx = canvas.getContext('2d');
+  //       ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+  //       const dataUrl = canvas.toDataURL();
+  //       var image = new Image();
+  //       image.src = canvas.toDataURL();
+
+  //       if (_this.callback) {
+  //         _this.callback(canvas.toDataURL(imageFormat));
+  //       } else {
+  //         // console.log('Need callback!');
+  //       }
+
+  //       video.remove();
+  //       try {
+  //         stream.getTracks()[0].stop();
+  //       } catch (e) { }
+  //     }
+
+  //     video.srcObject = stream;
+  //     document.body.appendChild(video);
+  //   };
+
+  //   this.handleError = function (e) {
+  //     // console.log(e);
+  //   };
+
+  //   desktopCapturer.getSources({ types: ['window', 'screen'] }).then(async sources => {
+  //     for (const source of sources) {
+  //       if ((source.name === "Entire Screen") || (source.name === "Screen 1") || (source.name === "Screen 2")) {
+  //         try {
+  //           const stream = await (<any>navigator.mediaDevices).getUserMedia({
+  //             audio: false,
+  //             video: {
+  //               mandatory: {
+  //                 chromeMediaSource: 'desktop',
+  //                 chromeMediaSourceId: source.id,
+  //                 minWidth: 1280,
+  //                 maxWidth: 4000,
+  //                 minHeight: 720,
+  //                 maxHeight: 4000
+  //               }
+  //             }
+  //           });
+  //           _this.handleStream(stream);
+  //         } catch (e) {
+  //           _this.handleError(e);
+  //         }
+  //       }
+  //     }
+  //   });
+  // }
 }
 
 
-
-// fullscreenScreenshot = (callback, imageFormat) => {
-//   var _this = this;
-//   this.callback = callback;
-//   imageFormat = imageFormat || 'image/jpeg';
-//   this.handleStream = (stream) => {
-//     var video = document.createElement('video');
-//     video.style.cssText = 'position:absolute;top:-10000px;left:-10000px;';
-
-//     video.onloadedmetadata = function () {
-//       video.play();
-
-//       var canvas = document.createElement('canvas');
-//       canvas.id = "canvas";
-//       var ctx = canvas.getContext('2d');
-//       ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-
-//       const dataUrl = canvas.toDataURL();
-//       var image = new Image();
-//       image.src = canvas.toDataURL();
-
-//       if (_this.callback) {
-//         _this.callback(canvas.toDataURL(imageFormat));
-//       } else {
-//         console.log('Need callback!');
-//       }
-
-//       video.remove();
-//       try {
-//         stream.getTracks()[0].stop();
-//       } catch (e) { }
-//     }
-
-//     video.srcObject = stream;
-//     document.body.appendChild(video);
-//   };
-
-//   this.handleError = function (e) {
-//     console.log(e);
-//   };
-
-//   desktopCapturer.getSources({ types: ['window', 'screen'] }).then(async sources => {
-//     for (const source of sources) {
-//       if ((source.name === "Entire Screen") || (source.name === "Screen 1") || (source.name === "Screen 2")) {
-//         try {
-//           const stream = await (<any>navigator.mediaDevices).getUserMedia({
-//             audio: false,
-//             video: {
-//               mandatory: {
-//                 chromeMediaSource: 'desktop',
-//                 chromeMediaSourceId: source.id,
-//                 minWidth: 1280,
-//                 maxWidth: 4000,
-//                 minHeight: 720,
-//                 maxHeight: 4000
-//               }
-//             }
-//           });
-//           _this.handleStream(stream);
-//         } catch (e) {
-//           _this.handleError(e);
-//         }
-//       }
-//     }
-//   });
-// }

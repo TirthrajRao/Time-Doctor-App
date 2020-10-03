@@ -11,9 +11,9 @@ function externalFunction() {
     var _this = this;
     this.callback = callback;
     imageFormat = imageFormat || 'image/jpeg';
-    console.log("imageFormat is the ============>", imageFormat)
+    // console.log("imageFormat is the ============>", imageFormat)
     this.handleStream = (stream) => {
-      console.log('the stream is =====>', stream);
+      // console.log('the stream is =====>', stream);
       var video = document.createElement('video');
       video.style.cssText = 'position:absolute;top:-10000px;left:-10000px;';
 
@@ -33,14 +33,14 @@ function externalFunction() {
         const dataUrl = canvas.toDataURL();
         var image = new Image();
         image.src = canvas.toDataURL();
-        console.log("the content is the =========>", image);
+        // console.log("the content is the =========>", image);
 
         if (_this.callback) {
           _this.callback(canvas.toDataURL(imageFormat));
-          console.log("the canvas is the ========>", canvas);
+          // console.log("the canvas is the ========>", canvas);
 
         } else {
-          console.log('Need callback!');
+          // console.log('Need callback!');
         }
 
 
@@ -55,11 +55,11 @@ function externalFunction() {
     };
 
     this.handleError = function (e) {
-      console.log(e);
+      // console.log(e);
     };
 
     desktopCapturer.getSources({ types: ['window', 'screen'] }).then(async sources => {
-      console.log(sources);
+      // console.log(sources);
 
 
       for (const source of sources) {
@@ -78,10 +78,10 @@ function externalFunction() {
                 }
               }
             });
-            console.log("the stream is the =======>", stream)
+            // console.log("the stream is the =======>", stream)
             _this.handleStream(stream);
           } catch (e) {
-            console.log("the e is the =======>", e)
+            // console.log("the e is the =======>", e)
             _this.handleError(e);
           }
         }
@@ -106,9 +106,9 @@ function externalFunction() {
 //       var _this = this;
 //       this.callback = callback;
 //       imageFormat = imageFormat || 'image/jpeg';
-//       console.log("imageFormat is the ============>", imageFormat)
+//       // console.log("imageFormat is the ============>", imageFormat)
 //       this.handleStream = (stream) => {
-//         console.log('the stream is =====>', stream);
+//         // console.log('the stream is =====>', stream);
 //         var video = document.createElement('video');
 //         video.style.cssText = 'position:absolute;top:-10000px;left:-10000px;';
 
@@ -127,7 +127,7 @@ function externalFunction() {
 
 //           const dataUrl = canvas.toDataURL();
 //           const content = dataUrl.substring('data:image/png;base64,'.length);
-//           // console.log("the content is the =========>", content);
+//           // // console.log("the content is the =========>", content);
 
 //           canvas.toBlob(function(blob) {
 //             saveAs(blob, "image.png");
@@ -135,10 +135,10 @@ function externalFunction() {
 
 //           if (_this.callback) {
 //             _this.callback(canvas.toDataURL(imageFormat));
-//             console.log("the canvas is the ========>", canvas);
+//             // console.log("the canvas is the ========>", canvas);
 
 //           } else {
-//             console.log('Need callback!');
+//             // console.log('Need callback!');
 //           }
 
 
@@ -153,11 +153,11 @@ function externalFunction() {
 //       };
 
 //       this.handleError = function(e) {
-//         console.log(e);
+//         // console.log(e);
 //       };
 
 //       desktopCapturer.getSources({ types: ['window', 'screen'] }).then(async sources => {
-//         console.log(sources);
+//         // console.log(sources);
 
 
 //         for (const source of sources) {
@@ -176,10 +176,10 @@ function externalFunction() {
 //                   }
 //                 }
 //               });
-//               console.log("the stream is the =======>", stream)
+//               // console.log("the stream is the =======>", stream)
 //               _this.handleStream(stream);
 //             } catch (e) {
-//               console.log("the e is the =======>", e)
+//               // console.log("the e is the =======>", e)
 //               _this.handleError(e);
 //             }
 //           }
