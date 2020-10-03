@@ -30,7 +30,7 @@
   margin: 4px 0px 4px 20px;
 }
 .welcome_section {
-  background-image: url(/assets/images/web_bg.jpg);
+  background-image: url(../../assets/images/web_bg.jpg);
   background-position: center;
   background-repeat: no-repeat;
   background-size: cover;

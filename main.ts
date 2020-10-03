@@ -46,11 +46,11 @@ function createWindow(): BrowserWindow {
     // Dereference the window object, usually you would store window
     // in an array if your app supports multi windows, this is the time
     // when you should delete the corresponding element.
-    if (JSON.parse(localStorage.getItem('isRunning'))) {
-      alert('Your timer is running')
-    } else {
+    // if (JSON.parse(localStorage.getItem('isRunning'))) {
+    //   alert('Your timer is running')
+    // } else {
       win = null;
-    }
+    // }
   });
 
   return win;
