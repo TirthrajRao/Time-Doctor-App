@@ -6,6 +6,7 @@ import { saveAs } from 'file-saver';
 import * as moment from 'moment';
 import * as _ from 'lodash';
 import { Observable, Observer } from 'rxjs';
+import { remote, dialog } from 'electron';
 declare var require: any;
 declare var externalFunction: any;
 
@@ -28,12 +29,13 @@ export class HomeComponent implements OnInit {
 
   timeout: any;
   seconds = 0;
-  minutes = 0;
-  hours = 0;
+  minutes = 45;
+  hours = 4;
   running = false;
   isFirst = true;
   constructor(public _userService: UserService, public router: Router) {
     localStorage.setItem('isRunning', JSON.stringify(this.running));
+    console.log(moment().format('DD-MM-yyyy'));
   }
 
   ngOnInit() {
@@ -41,6 +43,45 @@ export class HomeComponent implements OnInit {
       this.router.navigate(['/login']);
       // console.log("not working");
     }
+    remote.getCurrentWindow().on('close', (e) => {
+      if (JSON.parse(localStorage.getItem('isRunning'))) {
+        const choice = dialog.showMessageBox(
+          remote.getCurrentWindow(),
+          {
+            type: 'question',
+            buttons: ['Yes', 'No'],
+            title: 'Confirm',
+            message: 'Your timer is running. Do you really want to close the application?'
+          }
+        )
+        console.log(choice);
+        if (choice) {
+          const logs = {
+            date: moment().format('DD-MM-yyyy'),
+            time: {
+              hours: this.hours,
+              minutes: this.minutes,
+              seconds: this.seconds
+            }
+          };
+          localStorage.setItem('logs', JSON.stringify(logs));
+          this._userService.storeLogs(logs).subscribe(res => e.preventDefault(), err => console.log(err));
+        }
+      }
+    })
+    this._userService.getLogs().subscribe(async (res: any) => {
+      const logs = {
+        date: res.logs.date,
+        time: res.logs.time
+      };
+      console.log(logs);
+      await localStorage.setItem('logs', JSON.stringify(logs));
+      this.hours = JSON.parse(localStorage.getItem('logs')).time.hours;
+      this.minutes = JSON.parse(localStorage.getItem('logs')).time.minutes;
+      this.seconds = JSON.parse(localStorage.getItem('logs')).time.seconds;
+    }, err => {
+      console.log(err)
+    })
   }
 
   startCapturing() {
@@ -134,9 +175,9 @@ export class HomeComponent implements OnInit {
     }, 500);
   }
 
-  logout() {
-    localStorage.removeItem('currentUser');
-    clearInterval(this.intervalId);
+  async logout() {
+    await this.stop();
+    await localStorage.removeItem('currentUser');
     this.router.navigate(['login']);
   }
 
@@ -162,18 +203,30 @@ export class HomeComponent implements OnInit {
 
   }
 
-  stop() {
-    clearTimeout(this.timeOutId);
+  async stop() {
+    await clearTimeout(this.timeOutId);
     this.running = false;
-    localStorage.setItem('isRunning', JSON.stringify(this.running));
-    clearInterval(this.intervalId);
+    await localStorage.setItem('isRunning', JSON.stringify(this.running));
+    const logs = {
+      date: moment().format('DD-MM-yyyy'),
+      time: {
+        hours: this.hours,
+        minutes: this.minutes,
+        seconds: this.seconds
+      }
+    };
+    await localStorage.setItem('logs', JSON.stringify(logs));
+    await this._userService.storeLogs(logs).subscribe(res => console.log(res), err => console.log(err));
+    await clearInterval(this.intervalId);
   }
 
   start() {
-    this.timer();
-    this.running = true;
-    localStorage.setItem('isRunning', JSON.stringify(this.running));
-    this.startCapturing();
+    if(!this.running) {
+      this.timer();
+      this.running = true;
+      localStorage.setItem('isRunning', JSON.stringify(this.running));
+      this.startCapturing();
+    }
   }
 
   clear() {

@@ -61,4 +61,14 @@ export class UserService {
 		console.log("the value of -----------", value);
 		return this._http.post(config.baseApiUrl + 'projects/addPost', value);
 	}
+
+	getLogs() {
+		const data = { user: JSON.parse(localStorage.getItem('currentUser'))._id, date: moment().format('DD-MM-yyyy') };
+		return this._http.post(config.baseApiUrl + 'user/get-log', data);
+	}
+
+	storeLogs(logs) {
+		logs.user = JSON.parse(localStorage.getItem('currentUser'))._id;
+		return this._http.post(config.baseApiUrl + 'user/add-logs', logs);
+	}
 }
