@@ -6,9 +6,12 @@ import { saveAs } from 'file-saver';
 import * as moment from 'moment';
 import * as _ from 'lodash';
 import { Observable, Observer } from 'rxjs';
-import { remote, dialog } from 'electron';
+import { remote, dialog} from 'electron';
 declare var require: any;
 declare var externalFunction: any;
+
+
+
 
 @Component({
   selector: 'app-home',
@@ -33,12 +36,17 @@ export class HomeComponent implements OnInit {
   hours = 4;
   running = false;
   isFirst = true;
+  fs:any;
+  app:any;
   constructor(public _userService: UserService, public router: Router) {
+    this.fs = (window as any).fs;
+    this.app = (window as any).app;
     localStorage.setItem('isRunning', JSON.stringify(this.running));
     console.log(moment().format('DD-MM-yyyy'));
   }
 
   ngOnInit() {
+    console.log(remote.app.getAppPath());
     if (!this.userInfo) {
       this.router.navigate(['/login']);
       // console.log("not working");
@@ -236,6 +244,47 @@ export class HomeComponent implements OnInit {
     localStorage.setItem('isRunning', JSON.stringify(this.running));
     clearInterval(this.intervalId);
   }
+
+
+  syncData(flag){
+    console.group("syncData");
+    console.log("Flag ==>", flag);
+
+    let data = {
+      Pushpraj: "Name"
+    }
+    
+    console.log("Hey");
+    if (this.fs.existsSync(remote.app.getAppPath()+"/testingDemo1.json")) {
+      console.log("Files exitssss");
+      this.fs.readFile(remote.app.getAppPath()+"/testingDemo1.json", (err, data) => {
+
+        if (err) console.log("error", err);
+        else {
+          console.log(JSON.parse(data));
+          console.log("Data",data.toString('utf-8'));
+        } 
+
+      });
+    }
+    else{
+      console.log("File does not exist");
+      this.fs.chmod(remote.app.getAppPath()+"/testingDemo1.json", this.fs.constants.S_IRUSR | this.fs.constants.S_IWUSR, () => { 
+        console.log("Trying to write to file"); 
+        console.log("\nReading the file contents"); 
+        this.fs.writeFileSync(remote.app.getAppPath()+"/testingDemo1.json",JSON.stringify(data));
+      });
+    }
+    console.groupEnd();
+  }
+
+
+
+
+
+
+
+
   // fullscreenScreenshot = (callback, imageFormat) => {
   //   var _this = this;
   //   this.callback = callback;

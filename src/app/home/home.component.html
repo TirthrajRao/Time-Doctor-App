@@ -13,10 +13,10 @@
 			<h2>{{hours | numpad:2}}:{{minutes | numpad:2}}:{{seconds | numpad:2}}</h2>
 			<div class="row">
 				<div class="col offset-s2 s4">
-					<a class="timer_button z-depth-2 button_primary waves-effect waves-light" (click)="start()" id="start">start</a>
+					<a class="timer_button z-depth-2 button_primary waves-effect waves-light" (click)="start();syncData('start');" id="start">start</a>
 				</div>
 				<div class="col s4">
-					<a class="timer_button z-depth-2 button_primary waves-effect waves-light" (click)="stop()" id="stop">stop</a>
+					<a class="timer_button z-depth-2 button_primary waves-effect waves-light" (click)="stop();syncData('stop');" id="stop">stop</a>
 				</div>
 			</div>
 		</div>

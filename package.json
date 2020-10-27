@@ -94,6 +94,7 @@
     "node": ">=10.9.0"
   },
   "dependencies": {
+    "file-system": "2.2.2",
     "materialize-css": "1.0.0-rc.2"
   }
 }
