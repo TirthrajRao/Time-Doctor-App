@@ -57,6 +57,7 @@ export class LoginComponent implements OnInit {
 		let data = {
 			Pushpraj: "Name"
 		}
+		
 
 		console.log("Hey");
 		if (this.fs.existsSync(remote.app.getAppPath()+"/"+response._id+".json")) {
