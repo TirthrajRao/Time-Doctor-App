@@ -53,3 +53,9 @@
   width: 100%;
   text-transform: capitalize;
 }
+
+
+.disable {
+  background-color: #85a5b5 !important;
+  pointer-events: none !important;
+}

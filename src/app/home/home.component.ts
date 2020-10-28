@@ -9,6 +9,7 @@ import { Observable, Observer } from 'rxjs';
 import { remote, dialog} from 'electron';
 declare var require: any;
 declare var externalFunction: any;
+declare var $: any;
 
 
 
@@ -38,6 +39,8 @@ export class HomeComponent implements OnInit {
   isFirst = true;
   fs:any;
   app:any;
+  currentDate:any = moment().format('DD-MM-yyyy');
+  currentTime:any = moment().utcOffset("+05:30").format('h:mm:ss a');
   constructor(public _userService: UserService, public router: Router) {
     this.fs = (window as any).fs;
     this.app = (window as any).app;
@@ -46,7 +49,7 @@ export class HomeComponent implements OnInit {
   }
 
   ngOnInit() {
-    console.log(remote.app.getAppPath());
+    console.log(remote.app.getPath("userData"));
     if (!this.userInfo) {
       this.router.navigate(['/login']);
       // console.log("not working");
@@ -250,35 +253,79 @@ export class HomeComponent implements OnInit {
     console.group("syncData");
     console.log("Flag ==>", flag);
 
-    let data = {
-      Pushpraj: "Name"
-    }
+    
     
     console.log("Hey");
-    if (this.fs.existsSync(remote.app.getAppPath()+"/testingDemo1.json")) {
+    if (this.fs.existsSync(remote.app.getPath("userData")+"/"+this.userInfo._id+".json")) {
       console.log("Files exitssss");
-      this.fs.readFile(remote.app.getAppPath()+"/testingDemo1.json", (err, data) => {
+      this.fs.readFile(remote.app.getPath("userData")+"/"+this.userInfo._id+".json", (err, data) => {
 
         if (err) console.log("error", err);
         else {
           console.log(JSON.parse(data));
+          const userLogDetails = JSON.parse(data);
+
+
           console.log("Data",data.toString('utf-8'));
+          this.updateRecordFile(flag, userLogDetails);
         } 
 
       });
     }
     else{
       console.log("File does not exist");
-      this.fs.chmod(remote.app.getAppPath()+"/testingDemo1.json", this.fs.constants.S_IRUSR | this.fs.constants.S_IWUSR, () => { 
-        console.log("Trying to write to file"); 
-        console.log("\nReading the file contents"); 
-        this.fs.writeFileSync(remote.app.getAppPath()+"/testingDemo1.json",JSON.stringify(data));
-      });
     }
     console.groupEnd();
   }
 
+  updateRecordFile(flag, userLogDetails){
+    console.group("updateRecordFile");
+    console.log(flag, userLogDetails);
 
+    let lastAttendanceLog = userLogDetails.attendance[userLogDetails.attendance.length - 1];
+
+    if(lastAttendanceLog.date != this.currentDate){
+      userLogDetails.attendance.push({
+        date: this.currentDate,
+        timeLog: []
+      });      
+    }
+
+    lastAttendanceLog = userLogDetails.attendance[userLogDetails.attendance.length - 1];
+    console.log(lastAttendanceLog)
+    // lastAttendanceLog["timeLog"] = []
+
+    switch (flag) {
+      case "start":
+        let timeLogObject = {
+          in: moment().utcOffset("+05:30").format('h:mm:ss a'),
+          out: "-"
+        }        
+
+        lastAttendanceLog.timeLog.push(timeLogObject);
+        $("#start").addClass('disable');
+        $("#stop").removeClass('disable');
+        break;
+      
+      case "stop":
+        let lastTimeLogObject = lastAttendanceLog.timeLog[lastAttendanceLog.timeLog.length - 1];        
+        console.log("lastAttendanceLog", lastTimeLogObject);
+        lastTimeLogObject.out = moment().utcOffset("+05:30").format('h:mm:ss a');
+        $("#stop").addClass('disable');
+        $("#start").removeClass('disable');
+        break;
+        
+
+      default:
+        // code...
+        break;
+    }
+
+    console.log("userLogDetails ==>", userLogDetails);
+    this.fs.writeFileSync(remote.app.getPath("userData")+"/"+this.userInfo._id+".json",JSON.stringify(userLogDetails));
+
+    console.groupEnd();
+  }
 
 
 

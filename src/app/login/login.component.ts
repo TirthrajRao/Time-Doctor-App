@@ -31,7 +31,8 @@ export class LoginComponent implements OnInit {
 
 	ngOnInit() {
 					
-		
+			console.log("user path ===>", remote.app.getPath("userData"));
+			console.log("app path ===>", remote.app.getPath("appData"));
 		
 	}
 
@@ -62,33 +63,35 @@ export class LoginComponent implements OnInit {
 		
 
 		console.log("Hey");
-		if (this.fs.existsSync(remote.app.getAppPath()+"/"+response._id+".json")) {
+		if (this.fs.existsSync(remote.app.getPath("userData")+"/"+response._id+".json")) {
 			console.log("Files exitssss");
 			this.checkForTodaysLog(response);
 
 		}
 		else{
 			console.log("File does not exist");
-			this.fs.chmod(remote.app.getAppPath()+"/"+response._id+".json", this.fs.constants.S_IRUSR | this.fs.constants.S_IWUSR, () => { 
+			this.fs.chmod(remote.app.getPath("userData")+"/"+response._id+".json", this.fs.constants.S_IRUSR | this.fs.constants.S_IWUSR, () => { 
 				console.log("Trying to write to file"); 
 				console.log("\nReading the file contents"); 
 
 
 				this.addRecordToFile(response);
 				
-				// this.fs.writeFileSync(remote.app.getAppPath()+"/"+response._id+".json",JSON.stringify(data));
+				// this.fs.writeFileSync(remote.app.getPath("userData")+"/"+response._id+".json",JSON.stringify(data));
 			});
 		}
 	}
 
 
 	async addRecordToFile(userDetails, existingRecord?){
+		console.log("userDetails ===>", userDetails, existingRecord);
 		let objToSave:any = {};
 
 		if(!existingRecord){
 			objToSave = {
 				attendance: [{
 					date: this.currentDate,
+					timeLog: []
 				}],
 				email: userDetails.email,
 				name: userDetails.name,
@@ -104,18 +107,18 @@ export class LoginComponent implements OnInit {
 
 		}
 
-		this.fs.writeFileSync(remote.app.getAppPath()+"/"+userDetails._id+".json",JSON.stringify(objToSave));
+		this.fs.writeFileSync(remote.app.getPath("userData")+"/"+userDetails._id+".json",JSON.stringify(objToSave));
 	}
 
 
 	checkForTodaysLog(userDetails){
-		this.fs.readFile(remote.app.getAppPath()+"/"+userDetails._id+".json", (err, data) => {
+		this.fs.readFile(remote.app.getPath("userData")+"/"+userDetails._id+".json", (err, data) => {
 
 			if (err) console.log("error", err);
 			else {
-				
+
 				const logDetails = JSON.parse(data);
-				
+
 				console.log("logDetails ===>", logDetails);
 				if(logDetails.attendance[logDetails.attendance.length -1 ].date == this.currentDate){
 					console.log("Same date.");
