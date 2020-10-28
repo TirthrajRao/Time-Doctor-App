@@ -38,12 +38,14 @@ export class HomeComponent implements OnInit {
   running = false;
   isFirst = true;
   fs:any;
-  app:any;
+  inActivityTime:any;
+
+
   currentDate:any = moment().format('DD-MM-yyyy');
   currentTime:any = moment().utcOffset("+05:30").format('h:mm:ss a');
   constructor(public _userService: UserService, public router: Router) {
     this.fs = (window as any).fs;
-    this.app = (window as any).app;
+  
     localStorage.setItem('isRunning', JSON.stringify(this.running));
     console.log(moment().format('DD-MM-yyyy'));
   }
@@ -251,6 +253,9 @@ export class HomeComponent implements OnInit {
 
   syncData(flag){
     console.group("syncData");
+    console.log("remote", remote.powerMonitor.getSystemIdleTime())
+    console.log("remote thresold", remote.powerMonitor.getSystemIdleState(4))
+
     console.log("Flag ==>", flag);
 
     
@@ -278,7 +283,7 @@ export class HomeComponent implements OnInit {
     console.groupEnd();
   }
 
-  updateRecordFile(flag, userLogDetails){
+  async updateRecordFile(flag, userLogDetails){
     console.group("updateRecordFile");
     console.log(flag, userLogDetails);
 
@@ -287,16 +292,22 @@ export class HomeComponent implements OnInit {
     if(lastAttendanceLog.date != this.currentDate){
       userLogDetails.attendance.push({
         date: this.currentDate,
-        timeLog: []
+        timeLog: [],
+        difference: '-',
+        inActivityTime: 0
       });      
     }
 
     lastAttendanceLog = userLogDetails.attendance[userLogDetails.attendance.length - 1];
     console.log(lastAttendanceLog)
-    // lastAttendanceLog["timeLog"] = []
+    const previousInActivityTime = lastAttendanceLog.inActivityTime;
 
     switch (flag) {
       case "start":
+        this.inActivityTime = setInterval(() => {
+            this.calculateInactivityTime(userLogDetails, previousInActivityTime);        
+        }, 1000);
+
         let timeLogObject = {
           in: moment().utcOffset("+05:30").format('h:mm:ss a'),
           out: "-"
@@ -311,6 +322,7 @@ export class HomeComponent implements OnInit {
         let lastTimeLogObject = lastAttendanceLog.timeLog[lastAttendanceLog.timeLog.length - 1];        
         console.log("lastAttendanceLog", lastTimeLogObject);
         lastTimeLogObject.out = moment().utcOffset("+05:30").format('h:mm:ss a');
+        lastAttendanceLog = await this.calculateDifference(lastAttendanceLog)
         $("#stop").addClass('disable');
         $("#start").removeClass('disable');
         break;
@@ -328,6 +340,52 @@ export class HomeComponent implements OnInit {
   }
 
 
+  calculateDifference(currentAttendanceLog){
+    console.group('calculateDifference', currentAttendanceLog);
+    var in1 = currentAttendanceLog.timeLog[currentAttendanceLog.timeLog.length -1].in;
+    var out = currentAttendanceLog.timeLog[currentAttendanceLog.timeLog.length -1].out;
+    var inn =  moment(in1, 'hh:mm:ss: a').diff(moment().startOf('day'), 'seconds');    
+    var outt =  moment(out, 'hh:mm:ss: a').diff(moment().startOf('day'), 'seconds');    
+    console.log("in time ==>", in1 , " seconsds ===>" , inn);
+    console.log("out time ==>", out , "seconsds==>" , outt);
+    let seconds = outt - inn;
+    if(currentAttendanceLog.difference != "-"){
+      var difference = moment(currentAttendanceLog.difference, 'hh:mm:ss: a').diff(moment().startOf('day'), 'seconds');   
+      console.log("difference ======>" , difference);
+      seconds = seconds + difference;
+    }
+    console.log("seconds ====>" , seconds);
+    seconds = Number(seconds);
+    var h = Math.floor(seconds / 3600);
+    var m = Math.floor(seconds % 3600 / 60);
+    var s = Math.floor(seconds % 3600 % 60);
+
+    var time =  ('0' + h).slice(-2) + ":" + ('0' + m).slice(-2) + ":" + ('0' + s).slice(-2);
+
+    console.log("time ==========+>"  , time);
+    currentAttendanceLog.difference = time;
+    currentAttendanceLog.status = "Absent";
+
+    return currentAttendanceLog
+    console.groupEnd();
+  }
+
+
+  calculateInactivityTime(userLogDetails, previousInActivityTime){
+    console.group("calculateInactivityTime");
+    let lastAttendanceLog = userLogDetails.attendance[userLogDetails.attendance.length - 1];
+
+    console.log("remote", remote.powerMonitor.getSystemIdleTime())
+    console.log("remote thresold", remote.powerMonitor.getSystemIdleState(120) == 'idle', remote.powerMonitor.getSystemIdleState(120))
+    if(remote.powerMonitor.getSystemIdleState(120) == 'idle'){
+      lastAttendanceLog.inActivityTime = remote.powerMonitor.getSystemIdleTime();
+      console.log("userLogDetails =====>", userLogDetails);
+      this.fs.writeFileSync(remote.app.getPath("userData")+"/"+this.userInfo._id+".json",JSON.stringify(userLogDetails));
+    }
+    console.groupEnd();
+  }
+
+
 
 
 
@@ -341,7 +399,7 @@ export class HomeComponent implements OnInit {
   //     video.style.cssText = 'position:absolute;top:-10000px;left:-10000px;';
 
   //     video.onloadedmetadata = function () {
-  //       video.play();
+  //       video.play();async 
 
   //       var canvas = document.createElement('canvas');
   //       canvas.id = "canvas";
@@ -360,8 +418,8 @@ export class HomeComponent implements OnInit {
 
   //       video.remove();
   //       try {
-  //         stream.getTracks()[0].stop();
-  //       } catch (e) { }
+
+    ch (e) { }
   //     }
 
   //     video.srcObject = stream;
@@ -370,7 +428,8 @@ export class HomeComponent implements OnInit {
 
   //   this.handleError = function (e) {
   //     // console.log(e);
-  //   };
+  //   };        await this.calculateD
+
 
   //   desktopCapturer.getSources({ types: ['window', 'screen'] }).then(async sources => {
   //     for (const source of sources) {

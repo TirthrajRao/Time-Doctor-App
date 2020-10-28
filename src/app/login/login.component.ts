@@ -33,7 +33,7 @@ export class LoginComponent implements OnInit {
 					
 			console.log("user path ===>", remote.app.getPath("userData"));
 			console.log("app path ===>", remote.app.getPath("appData"));
-		
+			console.log("remote", remote.powerMonitor.getSystemIdleTime())
 	}
 
 	loginUser(value) {
@@ -91,7 +91,9 @@ export class LoginComponent implements OnInit {
 			objToSave = {
 				attendance: [{
 					date: this.currentDate,
-					timeLog: []
+					timeLog: [],
+					difference: '-',
+					inActivityTime: 0
 				}],
 				email: userDetails.email,
 				name: userDetails.name,
@@ -103,6 +105,9 @@ export class LoginComponent implements OnInit {
 			objToSave = existingRecord;
 			objToSave.attendance.push({
 				date: this.currentDate,
+				difference: '-',
+				timeLog: [],
+				inActivityTime: 0
 			});
 
 		}
