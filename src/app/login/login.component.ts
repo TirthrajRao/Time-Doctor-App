@@ -3,6 +3,8 @@ import { FormControl, Validators, FormGroup, FormBuilder } from '@angular/forms'
 import { UserService } from '../services/user.service';
 import { Router } from '@angular/router';
 import { remote, dialog} from 'electron';
+import * as moment from 'moment';
+
 
 @Component({
 	selector: 'app-login',
@@ -17,7 +19,7 @@ export class LoginComponent implements OnInit {
 	timeString: any;
 
 	fs:any;
-
+	currentDate:any = moment().format('DD-MM-yyyy');
 	constructor(public _userService: UserService, private router: Router) {
 		this.fs = (window as any).fs;
 
@@ -62,24 +64,71 @@ export class LoginComponent implements OnInit {
 		console.log("Hey");
 		if (this.fs.existsSync(remote.app.getAppPath()+"/"+response._id+".json")) {
 			console.log("Files exitssss");
-			this.fs.readFile(remote.app.getAppPath()+"/"+response._id+".json", (err, data) => {
+			this.checkForTodaysLog(response);
 
-				if (err) console.log("error", err);
-				else {
-					console.log(JSON.parse(data));
-					console.log("Data",data.toString('utf-8'));
-				} 
-
-			});
 		}
 		else{
 			console.log("File does not exist");
 			this.fs.chmod(remote.app.getAppPath()+"/"+response._id+".json", this.fs.constants.S_IRUSR | this.fs.constants.S_IWUSR, () => { 
 				console.log("Trying to write to file"); 
 				console.log("\nReading the file contents"); 
-				this.fs.writeFileSync(remote.app.getAppPath()+"/"+response._id+".json",JSON.stringify(data));
+
+
+				this.addRecordToFile(response);
+				
+				// this.fs.writeFileSync(remote.app.getAppPath()+"/"+response._id+".json",JSON.stringify(data));
 			});
 		}
+	}
+
+
+	async addRecordToFile(userDetails, existingRecord?){
+		let objToSave:any = {};
+
+		if(!existingRecord){
+			objToSave = {
+				attendance: [{
+					date: this.currentDate,
+				}],
+				email: userDetails.email,
+				name: userDetails.name,
+				userRole: userDetails.userRole,
+				versionId: userDetails.versionId
+			}
+		}
+		else{
+			objToSave = existingRecord;
+			objToSave.attendance.push({
+				date: this.currentDate,
+			});
+
+		}
+
+		this.fs.writeFileSync(remote.app.getAppPath()+"/"+userDetails._id+".json",JSON.stringify(objToSave));
+	}
+
+
+	checkForTodaysLog(userDetails){
+		this.fs.readFile(remote.app.getAppPath()+"/"+userDetails._id+".json", (err, data) => {
+
+			if (err) console.log("error", err);
+			else {
+				
+				const logDetails = JSON.parse(data);
+				
+				console.log("logDetails ===>", logDetails);
+				if(logDetails.attendance[logDetails.attendance.length -1 ].date == this.currentDate){
+					console.log("Same date.");
+				}else{
+
+					this.addRecordToFile(userDetails, logDetails);
+					console.log("Different date");
+				}
+
+
+			} 
+
+		});
 	}
 
 }
