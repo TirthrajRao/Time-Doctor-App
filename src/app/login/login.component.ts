@@ -93,7 +93,8 @@ export class LoginComponent implements OnInit {
 					date: this.currentDate,
 					timeLog: [],
 					difference: '-',
-					inActivityTime: 0
+					inActivityTime: 0,
+					images: []
 				}],
 				email: userDetails.email,
 				name: userDetails.name,
@@ -107,7 +108,8 @@ export class LoginComponent implements OnInit {
 				date: this.currentDate,
 				difference: '-',
 				timeLog: [],
-				inActivityTime: 0
+				inActivityTime: 0,
+				images: []
 			});
 
 		}

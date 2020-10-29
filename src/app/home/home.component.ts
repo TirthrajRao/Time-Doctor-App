@@ -60,7 +60,6 @@ export class HomeComponent implements OnInit {
       this.router.navigate(['/login']);
       // console.log("not working");
     }
-
     this.jsonFilePath = remote.app.getPath("userData")+"/"+this.userInfo._id+".json";
 
 
@@ -169,6 +168,8 @@ export class HomeComponent implements OnInit {
     return '0' + val;
   }
 
+
+
   async external() {
     // await this.fullscreenScreenshot((base64data) => {
     //   localStorage.setItem('imgUrl', JSON.stringify(base64data));
@@ -187,9 +188,10 @@ export class HomeComponent implements OnInit {
       formData.append('userId', JSON.parse(localStorage.getItem('currentUser'))._id);
       formData.append('time', `${String(this.hours).length === 1 ? this.getPaddedVal(this.hours) : this.hours}-${String(this.minutes).length === 1 ? this.getPaddedVal(this.minutes) : this.minutes}-${String(this.seconds).length === 1 ? this.getPaddedVal(this.seconds) : this.seconds}`);
       formData.append('uploadFile', imageFile);
-
+      console.log("Image file ======>", imageFile);
       this._userService.uploadbase64Img(formData).subscribe((res) => {
-        // console.log("the res is the ==========>", res);
+        console.log("the res is the ==========>", res);
+        this.syncData('image', res.files[0]);
         clearTimeout(this.timeout);
         this.isFirst = false;
       }, (err) => {
@@ -315,7 +317,8 @@ export class HomeComponent implements OnInit {
         date: this.currentDate,
         timeLog: [],
         difference: '-',
-        inActivityTime: 0
+        inActivityTime: 0,
+        images: []
       });      
     }
 
@@ -344,17 +347,16 @@ export class HomeComponent implements OnInit {
         clearInterval(this.inActivityTimeInterval);
         let lastTimeLogObject = lastAttendanceLog.timeLog[lastAttendanceLog.timeLog.length - 1];        
         console.log("lastAttendanceLog", lastTimeLogObject);
-        /*await setTimeout(async () => {
-
-
-        }, 1000);*/
-          lastTimeLogObject.out = logTime;
-          lastAttendanceLog = await this.calculateDifference(lastAttendanceLog)
+        
+        lastTimeLogObject.out = logTime;
+        lastAttendanceLog = await this.calculateDifference(lastAttendanceLog)
         $("#stop").addClass('disable');
         $("#start").removeClass('disable');
         break;
         
-
+      case "image":
+        lastAttendanceLog.images.push(logTime);
+        break;        
       default:
         // code...
         break;
