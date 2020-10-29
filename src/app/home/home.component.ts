@@ -33,16 +33,20 @@ export class HomeComponent implements OnInit {
 
   timeout: any;
   seconds = 0;
-  minutes = 45;
-  hours = 4;
+  minutes = 0;
+  hours = 0;
   running = false;
   isFirst = true;
   fs:any;
   inActivityTime:any;
-
+  inActivityStatus:any = 'active';
+  inActivityTimeInterval:any
 
   currentDate:any = moment().format('DD-MM-yyyy');
   currentTime:any = moment().utcOffset("+05:30").format('h:mm:ss a');
+  jsonFilePath:any;
+  timeOutFlag:boolean = false;
+
   constructor(public _userService: UserService, public router: Router) {
     this.fs = (window as any).fs;
   
@@ -56,6 +60,10 @@ export class HomeComponent implements OnInit {
       this.router.navigate(['/login']);
       // console.log("not working");
     }
+
+    this.jsonFilePath = remote.app.getPath("userData")+"/"+this.userInfo._id+".json";
+
+
     remote.getCurrentWindow().on('close', (e) => {
       if (JSON.parse(localStorage.getItem('isRunning'))) {
         const choice = dialog.showMessageBox(
@@ -83,15 +91,18 @@ export class HomeComponent implements OnInit {
       }
     })
     this._userService.getLogs().subscribe(async (res: any) => {
-      const logs = {
-        date: res.logs.date,
-        time: res.logs.time
-      };
-      console.log(logs);
-      await localStorage.setItem('logs', JSON.stringify(logs));
-      this.hours = JSON.parse(localStorage.getItem('logs')).time.hours;
-      this.minutes = JSON.parse(localStorage.getItem('logs')).time.minutes;
-      this.seconds = JSON.parse(localStorage.getItem('logs')).time.seconds;
+      if(res.logs){
+        const logs = {
+          date: res.logs.date,
+          time: res.logs.time
+        };
+        console.log(logs);
+        await localStorage.setItem('logs', JSON.stringify(logs));
+        this.hours = JSON.parse(localStorage.getItem('logs')).time.hours;
+        this.minutes = JSON.parse(localStorage.getItem('logs')).time.minutes;
+        this.seconds = JSON.parse(localStorage.getItem('logs')).time.seconds;
+
+      }
     }, err => {
       console.log(err)
     })
@@ -196,8 +207,13 @@ export class HomeComponent implements OnInit {
 
   timer() {
     this.timeOutId = setTimeout(() => {
+      console.log("times()", moment().utcOffset("+05:30").format('h:mm:ss a'));
       this.updateTime();
       this.timer();
+      if(!this.timeOutFlag){
+        this.syncData('start', moment().utcOffset("+05:30").format('h:mm:ss a')); 
+        this.timeOutFlag = true; 
+      }
     }, 1000);
   }
 
@@ -219,6 +235,7 @@ export class HomeComponent implements OnInit {
   async stop() {
     await clearTimeout(this.timeOutId);
     this.running = false;
+    console.log("stop()", moment().utcOffset("+05:30").format('h:mm:ss a'));
     await localStorage.setItem('isRunning', JSON.stringify(this.running));
     const logs = {
       date: moment().format('DD-MM-yyyy'),
@@ -228,6 +245,9 @@ export class HomeComponent implements OnInit {
         seconds: this.seconds
       }
     };
+    if(this.timeOutFlag)
+      this.syncData('stop', moment().utcOffset("+05:30").format('h:mm:ss a'));
+    this.timeOutFlag = false;
     await localStorage.setItem('logs', JSON.stringify(logs));
     await this._userService.storeLogs(logs).subscribe(res => console.log(res), err => console.log(err));
     await clearInterval(this.intervalId);
@@ -236,6 +256,7 @@ export class HomeComponent implements OnInit {
   start() {
     if(!this.running) {
       this.timer();
+      
       this.running = true;
       localStorage.setItem('isRunning', JSON.stringify(this.running));
       this.startCapturing();
@@ -251,7 +272,7 @@ export class HomeComponent implements OnInit {
   }
 
 
-  syncData(flag){
+  syncData(flag, logTime?){
     console.group("syncData");
     console.log("remote", remote.powerMonitor.getSystemIdleTime())
     console.log("remote thresold", remote.powerMonitor.getSystemIdleState(4))
@@ -261,9 +282,9 @@ export class HomeComponent implements OnInit {
     
     
     console.log("Hey");
-    if (this.fs.existsSync(remote.app.getPath("userData")+"/"+this.userInfo._id+".json")) {
+    if (this.fs.existsSync(this.jsonFilePath)) {
       console.log("Files exitssss");
-      this.fs.readFile(remote.app.getPath("userData")+"/"+this.userInfo._id+".json", (err, data) => {
+      this.fs.readFile(this.jsonFilePath, (err, data) => {
 
         if (err) console.log("error", err);
         else {
@@ -272,7 +293,7 @@ export class HomeComponent implements OnInit {
 
 
           console.log("Data",data.toString('utf-8'));
-          this.updateRecordFile(flag, userLogDetails);
+          this.updateRecordFile(flag, userLogDetails, logTime);
         } 
 
       });
@@ -283,7 +304,7 @@ export class HomeComponent implements OnInit {
     console.groupEnd();
   }
 
-  async updateRecordFile(flag, userLogDetails){
+  async updateRecordFile(flag, userLogDetails, logTime?){
     console.group("updateRecordFile");
     console.log(flag, userLogDetails);
 
@@ -304,25 +325,31 @@ export class HomeComponent implements OnInit {
 
     switch (flag) {
       case "start":
-        this.inActivityTime = setInterval(() => {
+        this.inActivityTimeInterval = setInterval(() => {
             this.calculateInactivityTime(userLogDetails, previousInActivityTime);        
         }, 1000);
-
-        let timeLogObject = {
-          in: moment().utcOffset("+05:30").format('h:mm:ss a'),
+        let timeLogObject:any = {};
+        timeLogObject = {
+          in: logTime,
           out: "-"
         }        
-
         lastAttendanceLog.timeLog.push(timeLogObject);
+        
+
         $("#start").addClass('disable');
         $("#stop").removeClass('disable');
         break;
       
       case "stop":
+        clearInterval(this.inActivityTimeInterval);
         let lastTimeLogObject = lastAttendanceLog.timeLog[lastAttendanceLog.timeLog.length - 1];        
         console.log("lastAttendanceLog", lastTimeLogObject);
-        lastTimeLogObject.out = moment().utcOffset("+05:30").format('h:mm:ss a');
-        lastAttendanceLog = await this.calculateDifference(lastAttendanceLog)
+        /*await setTimeout(async () => {
+
+
+        }, 1000);*/
+          lastTimeLogObject.out = logTime;
+          lastAttendanceLog = await this.calculateDifference(lastAttendanceLog)
         $("#stop").addClass('disable');
         $("#start").removeClass('disable');
         break;
@@ -334,7 +361,12 @@ export class HomeComponent implements OnInit {
     }
 
     console.log("userLogDetails ==>", userLogDetails);
-    this.fs.writeFileSync(remote.app.getPath("userData")+"/"+this.userInfo._id+".json",JSON.stringify(userLogDetails));
+    await setTimeout(() => {
+
+      this.fs.writeFileSync(this.jsonFilePath,JSON.stringify(userLogDetails));
+
+
+    }, 2000);
 
     console.groupEnd();
   }
@@ -346,15 +378,15 @@ export class HomeComponent implements OnInit {
     var out = currentAttendanceLog.timeLog[currentAttendanceLog.timeLog.length -1].out;
     var inn =  moment(in1, 'hh:mm:ss: a').diff(moment().startOf('day'), 'seconds');    
     var outt =  moment(out, 'hh:mm:ss: a').diff(moment().startOf('day'), 'seconds');    
-    console.log("in time ==>", in1 , " seconsds ===>" , inn);
-    console.log("out time ==>", out , "seconsds==>" , outt);
+    // console.log("in time ==>", in1 , " seconsds ===>" , inn);
+    // console.log("out time ==>", out , "seconsds==>" , outt);
     let seconds = outt - inn;
     if(currentAttendanceLog.difference != "-"){
       var difference = moment(currentAttendanceLog.difference, 'hh:mm:ss: a').diff(moment().startOf('day'), 'seconds');   
-      console.log("difference ======>" , difference);
+      // console.log("difference ======>" , difference);
       seconds = seconds + difference;
     }
-    console.log("seconds ====>" , seconds);
+    // console.log("seconds ====>" , seconds);
     seconds = Number(seconds);
     var h = Math.floor(seconds / 3600);
     var m = Math.floor(seconds % 3600 / 60);
@@ -375,13 +407,30 @@ export class HomeComponent implements OnInit {
     console.group("calculateInactivityTime");
     let lastAttendanceLog = userLogDetails.attendance[userLogDetails.attendance.length - 1];
 
-    console.log("remote", remote.powerMonitor.getSystemIdleTime())
-    console.log("remote thresold", remote.powerMonitor.getSystemIdleState(120) == 'idle', remote.powerMonitor.getSystemIdleState(120))
-    if(remote.powerMonitor.getSystemIdleState(120) == 'idle'){
-      lastAttendanceLog.inActivityTime = remote.powerMonitor.getSystemIdleTime();
+    // console.log("remote", remote.powerMonitor.getSystemIdleTime())
+    // console.log("remote thresold", remote.powerMonitor.getSystemIdleState(5) == 'idle', remote.powerMonitor.getSystemIdleState(120))
+
+    if(!remote.powerMonitor.getSystemIdleTime() && this.inActivityStatus == 'idle'){
+      console.log("In if part");
+      lastAttendanceLog.inActivityTime = lastAttendanceLog.inActivityTime + this.inActivityTime;
       console.log("userLogDetails =====>", userLogDetails);
-      this.fs.writeFileSync(remote.app.getPath("userData")+"/"+this.userInfo._id+".json",JSON.stringify(userLogDetails));
+      this.inActivityStatus = 'active'
+
+      this.fs.writeFileSync(this.jsonFilePath,JSON.stringify(userLogDetails));
+
     }
+    else if(remote.powerMonitor.getSystemIdleState(5) == 'idle'){
+      // console.log("In else if part");
+        this.inActivityStatus = 'idle'
+        this.inActivityTime = remote.powerMonitor.getSystemIdleTime();
+    }
+    else{
+      // console.log("In else part");
+    }
+
+    // this.
+    /*if(remote.powerMonitor.getSystemIdleState(120) == 'idle' && this.inActivityStatus == 'idle'){
+    }*/
     console.groupEnd();
   }
 
