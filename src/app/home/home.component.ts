@@ -55,6 +55,7 @@ export class HomeComponent implements OnInit {
   }
 
   ngOnInit() {
+    console.log(navigator.onLine);
     console.log(remote.app.getPath("userData"));
     if (!this.userInfo) {
       this.router.navigate(['/login']);
@@ -189,14 +190,23 @@ export class HomeComponent implements OnInit {
       formData.append('time', `${String(this.hours).length === 1 ? this.getPaddedVal(this.hours) : this.hours}-${String(this.minutes).length === 1 ? this.getPaddedVal(this.minutes) : this.minutes}-${String(this.seconds).length === 1 ? this.getPaddedVal(this.seconds) : this.seconds}`);
       formData.append('uploadFile', imageFile);
       console.log("Image file ======>", imageFile);
-      this._userService.uploadbase64Img(formData).subscribe((res) => {
-        console.log("the res is the ==========>", res);
-        this.syncData('image', res.files[0]);
-        clearTimeout(this.timeout);
-        this.isFirst = false;
-      }, (err) => {
-        // console.log("the err is the ==========>", err);
-      })
+
+      if(navigator.onLine){
+        this._userService.uploadbase64Img(formData).subscribe((res) => {
+          console.log("the res is the ==========>", res);
+          this.syncData('image', res.files[0]);
+          clearTimeout(this.timeout);
+          this.isFirst = false;
+        }, (err) => {
+          // console.log("the err is the ==========>", err);
+        })
+
+      }
+      else{
+        this.syncData('image', {file: imageFile});
+      }
+
+
 
     }, 500);
   }
