@@ -37,6 +37,8 @@ export class HomeComponent implements OnInit {
   hours = 0;
   running = false;
   isFirst = true;
+
+  userLogDetails:any;
   fs:any;
   inActivityTime:any;
   inActivityStatus:any = 'active';
@@ -45,6 +47,8 @@ export class HomeComponent implements OnInit {
   currentDate:any = moment().format('DD-MM-yyyy');
   currentTime:any = moment().utcOffset("+05:30").format('h:mm:ss a');
   jsonFilePath:any;
+  imageFilesPath:any;
+
   timeOutFlag:boolean = false;
 
   constructor(public _userService: UserService, public router: Router) {
@@ -61,6 +65,7 @@ export class HomeComponent implements OnInit {
       this.router.navigate(['/login']);
       // console.log("not working");
     }
+    this.imageFilesPath = remote.app.getPath("userData")+"/"+this.userInfo._id+"/";
     this.jsonFilePath = remote.app.getPath("userData")+"/"+this.userInfo._id+".json";
     this.external();
 
@@ -191,20 +196,32 @@ export class HomeComponent implements OnInit {
       formData.append('uploadFile', imageFile);
       console.log("Image file ======>", imageFile);
 
-      if(navigator.onLine){
-        this._userService.uploadbase64Img(formData).subscribe((res) => {
-          console.log("the res is the ==========>", res);
-          this.syncData('image', res.files[0]);
-          clearTimeout(this.timeout);
-          this.isFirst = false;
-        }, (err) => {
-          // console.log("the err is the ==========>", err);
-        })
 
-      }
-      else{
-        this.syncData('image', {file: imageFile});
-      }
+      this.fs.writeFile(this.imageFilesPath+imageName+".png", this.base64data, 'base64', (err) => {
+        if (err){
+          return console.error(err)
+
+        }
+        else{
+          console.log('file saved to ', this.imageFilesPath+imageName);
+          this.syncData('image', this.imageFilesPath+imageName+".png");
+
+        }
+        clearTimeout(this.timeout);
+
+        
+      });
+
+
+      /*this.fs.writeFile(remote.app.getPath("userData")+"/"+this.userInfo._id+"/"+imageName, imageFile, (err) => {
+      })*/
+      /*this._userService.uploadbase64Img(formData).subscribe((res) => {
+        console.log("the res is the ==========>", res);
+        this.syncData('image', res.files[0]);
+        this.isFirst = false;
+      }, (err) => {
+        // console.log("the err is the ==========>", err);
+      })*/
 
 
 
@@ -220,6 +237,10 @@ export class HomeComponent implements OnInit {
   timer() {
     this.timeOutId = setTimeout(() => {
       console.log("times()", moment().utcOffset("+05:30").format('h:mm:ss a'));
+    if(!this.timeOutFlag){
+      this.syncData('start', moment().utcOffset("+05:30").format('h:mm:ss a')); 
+      this.timeOutFlag = true; 
+    }
       this.updateTime();
       this.timer();
     }, 1000);
@@ -227,10 +248,6 @@ export class HomeComponent implements OnInit {
 
   updateTime() {
     this.seconds++;
-    if(!this.timeOutFlag){
-      this.syncData('start', moment().utcOffset("+05:30").format('h:mm:ss a')); 
-      this.timeOutFlag = true; 
-    }
     if (this.seconds === 60) {
       this.seconds = 0;
       this.minutes++;
@@ -257,12 +274,14 @@ export class HomeComponent implements OnInit {
         seconds: this.seconds
       }
     };
+
     if(this.timeOutFlag){
       this.syncData('stop', moment().utcOffset("+05:30").format('h:mm:ss a'));
       $("#stop").addClass('disable');
       $("#start").removeClass('disable');
     }
     this.timeOutFlag = false;
+    
     await localStorage.setItem('logs', JSON.stringify(logs));
     await this._userService.storeLogs(logs).subscribe(res => console.log(res), err => console.log(err));
     await clearInterval(this.intervalId);
@@ -290,14 +309,7 @@ export class HomeComponent implements OnInit {
 
   syncData(flag, logTime?){
     console.group("syncData");
-    console.log("remote", remote.powerMonitor.getSystemIdleTime())
-    console.log("remote thresold", remote.powerMonitor.getSystemIdleState(4))
-
     console.log("Flag ==>", flag);
-
-    
-    
-    console.log("Hey");
     if (this.fs.existsSync(this.jsonFilePath)) {
       console.log("Files exitssss");
       this.fs.readFile(this.jsonFilePath, (err, data) => {
@@ -305,11 +317,12 @@ export class HomeComponent implements OnInit {
         if (err) console.log("error", err);
         else {
           console.log(JSON.parse(data));
-          const userLogDetails = JSON.parse(data);
+          this.userLogDetails = JSON.parse(data);
 
+          
 
           console.log("Data",data.toString('utf-8'));
-          this.updateRecordFile(flag, userLogDetails, logTime);
+          this.updateRecordFile(flag, this.userLogDetails, logTime);
         } 
 
       });
@@ -442,13 +455,12 @@ export class HomeComponent implements OnInit {
       // console.log("In else part");
     }
 
-    // this.
-    /*if(remote.powerMonitor.getSystemIdleState(120) == 'idle' && this.inActivityStatus == 'idle'){
-    }*/
+    
     console.groupEnd();
   }
 
 
+  
 
 
 

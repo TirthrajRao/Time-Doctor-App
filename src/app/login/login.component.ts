@@ -40,6 +40,7 @@ export class LoginComponent implements OnInit {
 		this._userService.loginUser(value).subscribe((response) => {
 			console.log("successfull login", response);
 			this.generateLoggedInUserFile(response)
+			this.generateLoggedInUserFolder(response);
 			this.isDisable = false;
 			this.isError = false;
 			localStorage.setItem('currentUser', JSON.stringify(response));
@@ -55,6 +56,16 @@ export class LoginComponent implements OnInit {
 		console.log(value);
 		this.loginForm.reset();
 	}
+
+	generateLoggedInUserFolder(response){
+		console.log("this.fs.existsSync(remote.app.getPath._id ==", this.fs.existsSync(remote.app.getPath("userData")+"/"+response._id));
+		if (!this.fs.existsSync(remote.app.getPath("userData")+"/"+response._id)){
+			this.fs.mkdirSync(remote.app.getPath("userData")+"/"+response._id);
+		}
+	}
+
+
+
 
 	generateLoggedInUserFile(response){
 		let data = {
