@@ -61,7 +61,7 @@ export class HomeComponent implements OnInit {
       // console.log("not working");
     }
     this.jsonFilePath = remote.app.getPath("userData")+"/"+this.userInfo._id+".json";
-
+    this.external();
 
     remote.getCurrentWindow().on('close', (e) => {
       if (JSON.parse(localStorage.getItem('isRunning'))) {
@@ -212,15 +212,15 @@ export class HomeComponent implements OnInit {
       console.log("times()", moment().utcOffset("+05:30").format('h:mm:ss a'));
       this.updateTime();
       this.timer();
-      if(!this.timeOutFlag){
-        this.syncData('start', moment().utcOffset("+05:30").format('h:mm:ss a')); 
-        this.timeOutFlag = true; 
-      }
     }, 1000);
   }
 
   updateTime() {
     this.seconds++;
+    if(!this.timeOutFlag){
+      this.syncData('start', moment().utcOffset("+05:30").format('h:mm:ss a')); 
+      this.timeOutFlag = true; 
+    }
     if (this.seconds === 60) {
       this.seconds = 0;
       this.minutes++;
@@ -247,8 +247,11 @@ export class HomeComponent implements OnInit {
         seconds: this.seconds
       }
     };
-    if(this.timeOutFlag)
+    if(this.timeOutFlag){
       this.syncData('stop', moment().utcOffset("+05:30").format('h:mm:ss a'));
+      $("#stop").addClass('disable');
+      $("#start").removeClass('disable');
+    }
     this.timeOutFlag = false;
     await localStorage.setItem('logs', JSON.stringify(logs));
     await this._userService.storeLogs(logs).subscribe(res => console.log(res), err => console.log(err));
@@ -258,7 +261,8 @@ export class HomeComponent implements OnInit {
   start() {
     if(!this.running) {
       this.timer();
-      
+      $("#start").addClass('disable');
+      $("#stop").removeClass('disable');
       this.running = true;
       localStorage.setItem('isRunning', JSON.stringify(this.running));
       this.startCapturing();
@@ -339,8 +343,7 @@ export class HomeComponent implements OnInit {
         lastAttendanceLog.timeLog.push(timeLogObject);
         
 
-        $("#start").addClass('disable');
-        $("#stop").removeClass('disable');
+
         break;
       
       case "stop":
@@ -350,8 +353,7 @@ export class HomeComponent implements OnInit {
         
         lastTimeLogObject.out = logTime;
         lastAttendanceLog = await this.calculateDifference(lastAttendanceLog)
-        $("#stop").addClass('disable');
-        $("#start").removeClass('disable');
+        
         break;
         
       case "image":
@@ -363,12 +365,12 @@ export class HomeComponent implements OnInit {
     }
 
     console.log("userLogDetails ==>", userLogDetails);
-    await setTimeout(() => {
+    // await setTimeout(() => {
 
       this.fs.writeFileSync(this.jsonFilePath,JSON.stringify(userLogDetails));
 
 
-    }, 2000);
+    // }, 2000);
 
     console.groupEnd();
   }
