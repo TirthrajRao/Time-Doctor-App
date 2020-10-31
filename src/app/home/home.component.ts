@@ -67,7 +67,7 @@ export class HomeComponent implements OnInit {
     }
     this.imageFilesPath = remote.app.getPath("userData")+"/"+this.userInfo._id+"/";
     this.jsonFilePath = remote.app.getPath("userData")+"/"+this.userInfo._id+".json";
-    this.external();
+    // this.external();
 
     remote.getCurrentWindow().on('close', (e) => {
       if (JSON.parse(localStorage.getItem('isRunning'))) {
@@ -380,7 +380,7 @@ export class HomeComponent implements OnInit {
         break;
         
       case "image":
-        lastAttendanceLog.images.push(logTime);
+        lastAttendanceLog.images.push({path: logTime});
         break;        
       default:
         // code...
@@ -460,10 +460,80 @@ export class HomeComponent implements OnInit {
   }
 
 
+  /*API call*/
+  /*Update data to database*/
+  updateData(){
+    console.group("updateData");
+
+    /*Fetch json file*/
+    this.fs.readFile(this.jsonFilePath, async (err, data) => {
+
+      if (err) console.log("error", err);
+      else {
+        console.log(JSON.parse(data));
+        const userLogDetails = JSON.parse(data);
+
+
+        // Select the image
+        
+        const formData = new FormData();
+        const details = await this.appendFilesToJson(userLogDetails);
+        console.log(userLogDetails, details);
+        // console.log("userLogDetails.attendance[2].images[0]", userLogDetails.attendance[2].images[0].blob());
+        /*
+
+        */
+        details.append('userId', JSON.parse(localStorage.getItem('currentUser'))._id);
+        this._userService.uploadbase64Img(details).subscribe((res) => {
+          console.log("the res is the ==========>", res);
+          // this.syncData('image', res.files[0]);
+          this.isFirst = false;
+        }, (err) => {
+          // console.log("the err is the ==========>", err);
+        })
+
+
+        /*API call*/
+          /*this._userService.updateLogs(userLogDetails).subscribe((res) => {
+          console.log("rres", res);
+        }, (err) => {
+          console.log("err", err);
+        });*/
+      } 
+
+    });
+    console.groupEnd();
+  }    
   
 
+  appendFilesToJson(userLogDetails){
+        const formData = new FormData();
+        formData.append('det',JSON.stringify(userLogDetails));            
+    _.forEach(userLogDetails.attendance, (singleAttendance, logIndex) => {
+      console.log(singleAttendance);  
+      _.forEach(singleAttendance.images, async (singleImage, imageIndex) => {
+        console.log(singleImage);  
+        const contents = this.fs.readFileSync(singleImage.path, {encoding: 'base64'});          
+        console.log(contents)
 
+        const imageBlob: Blob = await this.b64toBlob(contents, "image/png");
+        console.log(imageBlob);
 
+        let imageName = singleImage.path.split("/")
+        imageName = imageName[imageName.length - 1];
+        console.log(imageName)
+        const imageFile: File = new File([imageBlob], imageName, {
+          type: "image/png"
+        });        
+        // console.log(userLogDetails.attendance[logIndex].images);
+        formData.append('uploads', imageFile, imageName);            
+        // userLogDetails.attendance[logIndex].images[imageIndex]["file"] = imageFile;
+      });
+    });    
+    console.log(userLogDetails)
+    
+    return formData;
+  }
 
   // fullscreenScreenshot = (callback, imageFormat) => {
   //   var _this = this;

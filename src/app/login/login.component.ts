@@ -110,7 +110,8 @@ export class LoginComponent implements OnInit {
 				email: userDetails.email,
 				name: userDetails.name,
 				userRole: userDetails.userRole,
-				versionId: userDetails.versionId
+				versionId: userDetails.versionId,
+				_id: userDetails._id
 			}
 		}
 		else{

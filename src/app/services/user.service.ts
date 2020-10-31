@@ -54,6 +54,7 @@ export class UserService {
 
 
 	uploadbase64Img(data) {
+		console.log(data)
 		return this._http.post<any>(config.baseApiUrl + "user/uploadImage", data);
 	}
 
@@ -71,4 +72,11 @@ export class UserService {
 		logs.user = JSON.parse(localStorage.getItem('currentUser'))._id;
 		return this._http.post(config.baseApiUrl + 'user/add-logs', logs);
 	}
+
+	updateLogs(logs){
+		logs["password"] = JSON.parse(localStorage.getItem('currentUser')).password;
+		return this._http.post(config.baseApiUrl + 'user/update-logs', logs);
+	}
+
+
 }
