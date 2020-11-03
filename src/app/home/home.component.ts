@@ -3,13 +3,16 @@ import { UserService } from '../services/user.service';
 import { FormGroup, FormBuilder, FormControl, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { saveAs } from 'file-saver';
+import * as socketIO from 'socket.io-client';
 import * as moment from 'moment';
 import * as _ from 'lodash';
-import { Observable, Observer } from 'rxjs';
+import { Observable, Observer, Subscription } from 'rxjs';
 import { remote, dialog} from 'electron';
 declare var require: any;
 declare var externalFunction: any;
 declare var $: any;
+import { startWith } from 'rxjs/operators';
+
 
 
 
@@ -50,7 +53,13 @@ export class HomeComponent implements OnInit {
   imageFilesPath:any;
 
   timeOutFlag:boolean = false;
+  socket:any;
 
+  /*Socket variables*/
+  documents: Observable<string[]>;
+  private _docSub: Subscription;
+
+    
   constructor(public _userService: UserService, public router: Router) {
     this.fs = (window as any).fs;
   
@@ -59,7 +68,9 @@ export class HomeComponent implements OnInit {
   }
 
   ngOnInit() {
-    console.log(navigator.onLine);
+    
+
+    // console.log(navigator.onLine);
     console.log(remote.app.getPath("userData"));
     if (!this.userInfo) {
       this.router.navigate(['/login']);
@@ -491,14 +502,6 @@ export class HomeComponent implements OnInit {
         }, (err) => {
           // console.log("the err is the ==========>", err);
         })
-
-
-        /*API call*/
-          /*this._userService.updateLogs(userLogDetails).subscribe((res) => {
-          console.log("rres", res);
-        }, (err) => {
-          console.log("err", err);
-        });*/
       } 
 
     });
@@ -508,7 +511,7 @@ export class HomeComponent implements OnInit {
 
   appendFilesToJson(userLogDetails){
         const formData = new FormData();
-        formData.append('det',JSON.stringify(userLogDetails));            
+        formData.append('jsonData',JSON.stringify(userLogDetails));            
     _.forEach(userLogDetails.attendance, (singleAttendance, logIndex) => {
       console.log(singleAttendance);  
       _.forEach(singleAttendance.images, async (singleImage, imageIndex) => {
@@ -534,6 +537,27 @@ export class HomeComponent implements OnInit {
     
     return formData;
   }
+
+
+  /*Check online offline status of user*/
+  checkStatus(status){
+  
+    console.log(navigator.onLine);
+    const object = {
+      status,
+      id: this.userInfo._id
+    }
+    this._userService.changeStatus(object)
+  }
+
+
+
+
+
+
+
+
+
 
   // fullscreenScreenshot = (callback, imageFormat) => {
   //   var _this = this;

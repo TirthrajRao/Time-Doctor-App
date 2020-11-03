@@ -6,6 +6,9 @@ import { map } from 'rxjs/operators';
 import { BehaviorSubject, Observable } from 'rxjs';
 import * as moment from 'moment';
 declare var require: any;
+import { Socket } from 'ngx-socket-io';
+
+
 
 
 @Injectable({
@@ -13,13 +16,20 @@ declare var require: any;
 })
 export class UserService {
 	isLoggedIn: EventEmitter<any> = new EventEmitter<any>();
+	// documents = this.socket.fromEvent<any>('getStatus');
 
 	private currentUserSubject: BehaviorSubject<any>;
 	public currentUser: Observable<any>;
-	constructor(public _http: HttpClient) {
+	constructor(public _http: HttpClient, private socket: Socket) {
 		this.currentUserSubject = new BehaviorSubject<any>(JSON.parse(localStorage.getItem('currentUser')));
 		this.currentUser = this.currentUserSubject.asObservable();
 	}
+
+	changeStatus(status) {
+    this.socket.emit('statusChanged', status);
+    
+  }
+
 
 	getdata() {
 		return this._http.get(config.baseApiUrl + "getData");
@@ -76,6 +86,10 @@ export class UserService {
 	updateLogs(logs){
 		logs["password"] = JSON.parse(localStorage.getItem('currentUser')).password;
 		return this._http.post(config.baseApiUrl + 'user/update-logs', logs);
+	}
+
+	checkStatus(){
+		return this._http.get(config.baseApiUrl+ 'check');		
 	}
 
 
