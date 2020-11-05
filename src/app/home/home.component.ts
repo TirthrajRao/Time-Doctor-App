@@ -47,7 +47,9 @@ export class HomeComponent implements OnInit {
   inActivityStatus:any = 'active';
   inActivityTimeInterval:any
 
-  currentDate:any = moment().format('DD-MM-yyyy');
+  // currentDate:any = moment().format('DD-MM-yyyy');
+  currentDate:any = new Date().toISOString().split("T")[0] + "T18:30:00.000Z";
+  
   currentTime:any = moment().utcOffset("+05:30").format('h:mm:ss a');
   jsonFilePath:any;
   imageFilesPath:any;
@@ -78,7 +80,7 @@ export class HomeComponent implements OnInit {
     }
     this.imageFilesPath = remote.app.getPath("userData")+"/"+this.userInfo._id+"/";
     this.jsonFilePath = remote.app.getPath("userData")+"/"+this.userInfo._id+".json";
-    // this.external();
+    this.external();
 
     remote.getCurrentWindow().on('close', (e) => {
       if (JSON.parse(localStorage.getItem('isRunning'))) {

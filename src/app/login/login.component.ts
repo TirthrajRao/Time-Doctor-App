@@ -19,7 +19,8 @@ export class LoginComponent implements OnInit {
 	timeString: any;
 
 	fs:any;
-	currentDate:any = moment().format('DD-MM-yyyy');
+	// currentDate:any = moment().format('DD-MM-yyyy');
+  	currentDate:any = new Date().toISOString().split("T")[0] + "T18:30:00.000Z";
 	constructor(public _userService: UserService, private router: Router) {
 		this.fs = (window as any).fs;
 
