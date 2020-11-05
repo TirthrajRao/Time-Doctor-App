@@ -240,9 +240,21 @@ export class HomeComponent implements OnInit {
   }
 
   async logout() {
-    await this.stop();
-    await localStorage.removeItem('currentUser');
-    this.router.navigate(['login']);
+    console.log(navigator.onLine);
+    if(navigator.onLine){
+      console.log("You are online");
+      await this.checkStatus("offline")
+      await this.stop();
+      await this.updateData();
+      console.log("is isSuccess ====>");
+      console.log("You are succeess");
+      
+      await localStorage.removeItem('currentUser');
+      this.router.navigate(['login']);
+    }
+    else{
+      console.log("You are offline");
+    }
   }
 
   timer() {
@@ -479,7 +491,10 @@ export class HomeComponent implements OnInit {
     /*Fetch json file*/
     this.fs.readFile(this.jsonFilePath, async (err, data) => {
 
-      if (err) console.log("error", err);
+      if (err) {
+        return false
+        console.log("error", err);
+      }
       else {
         console.log(JSON.parse(data));
         const userLogDetails = JSON.parse(data);
@@ -494,13 +509,15 @@ export class HomeComponent implements OnInit {
         /*
 
         */
-        details.append('userId', JSON.parse(localStorage.getItem('currentUser'))._id);
-        this._userService.uploadbase64Img(details).subscribe((res) => {
+        details.append('userId', this.userInfo._id);
+        await this._userService.uploadbase64Img(details).subscribe((res) => {
           console.log("the res is the ==========>", res);
           // this.syncData('image', res.files[0]);
           this.isFirst = false;
+          return true;
         }, (err) => {
-          // console.log("the err is the ==========>", err);
+          return false;
+          console.log("the err is the ==========>", err);
         })
       } 
 
@@ -545,7 +562,7 @@ export class HomeComponent implements OnInit {
     console.log(navigator.onLine);
     const object = {
       status,
-      id: this.userInfo._id
+      user: this.userInfo._id
     }
     this._userService.changeStatus(object)
   }
