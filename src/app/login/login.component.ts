@@ -140,7 +140,7 @@ export class LoginComponent implements OnInit {
 				const logDetails = JSON.parse(data);
 
 				console.log("logDetails ===>", logDetails);
-				if(logDetails.attendance[logDetails.attendance.length -1 ].date == this.currentDate){
+				if((logDetails.attendance.length > 0) && (logDetails.attendance[logDetails.attendance.length -1 ].date == this.currentDate)){
 					console.log("Same date.");
 				}else{
 

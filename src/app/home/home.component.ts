@@ -49,7 +49,7 @@ export class HomeComponent implements OnInit {
 
   // currentDate:any = moment().format('DD-MM-yyyy');
   currentDate:any = new Date().toISOString().split("T")[0] + "T18:30:00.000Z";
-  
+
   currentTime:any = moment().utcOffset("+05:30").format('h:mm:ss a');
   jsonFilePath:any;
   imageFilesPath:any;
@@ -246,13 +246,18 @@ export class HomeComponent implements OnInit {
     if(navigator.onLine){
       console.log("You are online");
       await this.checkStatus("offline")
-      await this.stop();
-      await this.updateData();
+      await this.stop()
+      .then(async (fullFilled) => {
+        await this.updateData();
+      })
+      .catch((err) => {
+        console.log(err);
+      });
       console.log("is isSuccess ====>");
       console.log("You are succeess");
       
-      await localStorage.removeItem('currentUser');
-      this.router.navigate(['login']);
+      // await localStorage.removeItem('currentUser');
+      // this.router.navigate(['login']);
     }
     else{
       console.log("You are offline");
@@ -287,29 +292,33 @@ export class HomeComponent implements OnInit {
   }
 
   async stop() {
-    await clearTimeout(this.timeOutId);
-    this.running = false;
-    console.log("stop()", moment().utcOffset("+05:30").format('h:mm:ss a'));
-    await localStorage.setItem('isRunning', JSON.stringify(this.running));
-    const logs = {
-      date: moment().format('DD-MM-yyyy'),
-      time: {
-        hours: this.hours,
-        minutes: this.minutes,
-        seconds: this.seconds
-      }
-    };
+    return new Promise( async (resolve, reject) => {
+      await clearTimeout(this.timeOutId);
+      this.running = false;
+      console.log("stop()", moment().utcOffset("+05:30").format('h:mm:ss a'));
+      await localStorage.setItem('isRunning', JSON.stringify(this.running));
+      const logs = {
+        date: moment().format('DD-MM-yyyy'),
+        time: {
+          hours: this.hours,
+          minutes: this.minutes,
+          seconds: this.seconds
+        }
+      };
 
-    if(this.timeOutFlag){
-      this.syncData('stop', moment().utcOffset("+05:30").format('h:mm:ss a'));
-      $("#stop").addClass('disable');
-      $("#start").removeClass('disable');
-    }
-    this.timeOutFlag = false;
-    
-    await localStorage.setItem('logs', JSON.stringify(logs));
-    await this._userService.storeLogs(logs).subscribe(res => console.log(res), err => console.log(err));
-    await clearInterval(this.intervalId);
+      if(this.timeOutFlag){
+        await this.syncData('stop', moment().utcOffset("+05:30").format('h:mm:ss a'));
+        $("#stop").addClass('disable');
+        $("#start").removeClass('disable');
+        resolve();
+      }
+      this.timeOutFlag = false;
+
+      await localStorage.setItem('logs', JSON.stringify(logs));
+      await this._userService.storeLogs(logs).subscribe(res => console.log(res), err => console.log(err));
+      await clearInterval(this.intervalId);
+
+    });
   }
 
   start() {
@@ -332,12 +341,12 @@ export class HomeComponent implements OnInit {
   }
 
 
-  syncData(flag, logTime?){
+  async syncData(flag, logTime?){
     console.group("syncData");
     console.log("Flag ==>", flag);
     if (this.fs.existsSync(this.jsonFilePath)) {
       console.log("Files exitssss");
-      this.fs.readFile(this.jsonFilePath, (err, data) => {
+      await this.fs.readFile(this.jsonFilePath,async  (err, data) => {
 
         if (err) console.log("error", err);
         else {
@@ -347,7 +356,7 @@ export class HomeComponent implements OnInit {
           
 
           console.log("Data",data.toString('utf-8'));
-          this.updateRecordFile(flag, this.userLogDetails, logTime);
+          await this.updateRecordFile(flag, this.userLogDetails, logTime);
         } 
 
       });
@@ -363,8 +372,8 @@ export class HomeComponent implements OnInit {
     console.log(flag, userLogDetails);
 
     let lastAttendanceLog = userLogDetails.attendance[userLogDetails.attendance.length - 1];
-
-    if(lastAttendanceLog.date != this.currentDate){
+    console.log(lastAttendanceLog)
+    if((!lastAttendanceLog) || (lastAttendanceLog.date != this.currentDate)){
       userLogDetails.attendance.push({
         date: this.currentDate,
         timeLog: [],
@@ -380,8 +389,8 @@ export class HomeComponent implements OnInit {
 
     switch (flag) {
       case "start":
-        this.inActivityTimeInterval = setInterval(() => {
-            this.calculateInactivityTime(userLogDetails, previousInActivityTime);        
+        this.inActivityTimeInterval = setInterval(async () => {
+           await this.calculateInactivityTime(userLogDetails, previousInActivityTime);        
         }, 1000);
         let timeLogObject:any = {};
         timeLogObject = {
@@ -414,8 +423,8 @@ export class HomeComponent implements OnInit {
 
     console.log("userLogDetails ==>", userLogDetails);
     // await setTimeout(() => {
-
-      this.fs.writeFileSync(this.jsonFilePath,JSON.stringify(userLogDetails));
+      userLogDetails.isLatestVersion = false;
+      await this.fs.writeFileSync(this.jsonFilePath,JSON.stringify(userLogDetails));
 
 
     // }, 2000);
@@ -468,6 +477,7 @@ export class HomeComponent implements OnInit {
       console.log("userLogDetails =====>", userLogDetails);
       this.inActivityStatus = 'active'
 
+      userLogDetails.isLatestVersion = false;
       this.fs.writeFileSync(this.jsonFilePath,JSON.stringify(userLogDetails));
 
     }
@@ -491,6 +501,10 @@ export class HomeComponent implements OnInit {
     console.group("updateData");
 
     /*Fetch json file*/
+
+
+
+
     this.fs.readFile(this.jsonFilePath, async (err, data) => {
 
       if (err) {
@@ -501,26 +515,33 @@ export class HomeComponent implements OnInit {
         console.log(JSON.parse(data));
         const userLogDetails = JSON.parse(data);
 
+        /*Check for lastest version*/
+        if(!userLogDetails.isLatestVersion){
+          // Select the image
 
-        // Select the image
-        
-        const formData = new FormData();
-        const details = await this.appendFilesToJson(userLogDetails);
-        console.log(userLogDetails, details);
-        // console.log("userLogDetails.attendance[2].images[0]", userLogDetails.attendance[2].images[0].blob());
-        /*
+          let formData = new FormData();
+          let details = await this.appendFilesToJson(userLogDetails);
 
-        */
-        details.append('userId', this.userInfo._id);
-        await this._userService.uploadbase64Img(details).subscribe((res) => {
-          console.log("the res is the ==========>", res);
-          // this.syncData('image', res.files[0]);
-          this.isFirst = false;
-          return true;
-        }, (err) => {
-          return false;
-          console.log("the err is the ==========>", err);
-        })
+
+
+          details.append('jsonData',JSON.stringify(userLogDetails));            
+          details.append('userId', this.userInfo._id);
+          console.log(userLogDetails, details);
+          await this._userService.uploadbase64Img(details).subscribe((res) => {
+            console.log("the res is the ==========>", res);
+            // this.syncData('image', res.files[0]);
+            this.removeDataFromJsonFile(res)
+            this.isFirst = false;
+            return true;
+          }, (err) => {
+            return false;
+            console.log("the err is the ==========>", err);
+          })
+
+        }
+        else{
+          console.log("Latest log");
+        }
       } 
 
     });
@@ -530,7 +551,8 @@ export class HomeComponent implements OnInit {
 
   appendFilesToJson(userLogDetails){
         const formData = new FormData();
-        formData.append('jsonData',JSON.stringify(userLogDetails));            
+        // formData.append('userLogDetails',JSON.stringify(userLogDetails));            
+
     _.forEach(userLogDetails.attendance, (singleAttendance, logIndex) => {
       console.log(singleAttendance);  
       _.forEach(singleAttendance.images, async (singleImage, imageIndex) => {
@@ -548,11 +570,14 @@ export class HomeComponent implements OnInit {
           type: "image/png"
         });        
         // console.log(userLogDetails.attendance[logIndex].images);
-        formData.append('uploads', imageFile, imageName);            
+        formData.append('uploads', imageFile, imageName); 
+        singleImage.path =  userLogDetails._id + '/' + imageName;          
         // userLogDetails.attendance[logIndex].images[imageIndex]["file"] = imageFile;
       });
     });    
     console.log(userLogDetails)
+    formData.append('userLogDetails',JSON.stringify(userLogDetails));            
+    
     
     return formData;
   }
@@ -570,6 +595,25 @@ export class HomeComponent implements OnInit {
   }
 
 
+  removeDataFromJsonFile(res){
+    this.fs.readFile(this.jsonFilePath, async (err, data) => {
+      const userLogDetails = JSON.parse(data);
+      userLogDetails.attendance = []
+      userLogDetails.versionId = res.versionId
+      userLogDetails['isLatestVersion'] = true;
+      this.fs.writeFileSync(this.jsonFilePath,JSON.stringify(userLogDetails));
+    });  
+
+    const files = this.fs.readdirSync(this.imageFilesPath)
+
+    if (files.length > 0) {
+      files.forEach((filename) => {
+        this.fs.unlinkSync(this.imageFilesPath + "/" + filename)
+      })
+    } else {
+      console.log("No files found in the directory.")
+    }
+  }
 
 
 
