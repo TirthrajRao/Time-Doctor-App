@@ -247,13 +247,13 @@ export class HomeComponent implements OnInit {
       console.log("You are online");
       await this.checkStatus("offline")
       await this.stop()
-      .then(async (fullFilled) => {
 
-        await this.updateData();
-      })
-      .catch((err) => {
-        console.log(err);
-      });
+      setTimeout(() => {
+        this.updateData();
+
+      }, 1000)
+      
+    
       console.log("is isSuccess ====>");
       console.log("You are succeess");
       
@@ -293,33 +293,30 @@ export class HomeComponent implements OnInit {
   }
 
   async stop() {
-    return new Promise( async (resolve, reject) => {
-      await clearTimeout(this.timeOutId);
-      this.running = false;
-      console.log("stop()", moment().utcOffset("+05:30").format('h:mm:ss a'));
-      await localStorage.setItem('isRunning', JSON.stringify(this.running));
-      const logs = {
-        date: moment().format('DD-MM-yyyy'),
-        time: {
-          hours: this.hours,
-          minutes: this.minutes,
-          seconds: this.seconds
-        }
-      };
 
-      if(this.timeOutFlag){
-        await this.syncData('stop', moment().utcOffset("+05:30").format('h:mm:ss a'));
-        $("#stop").addClass('disable');
-        $("#start").removeClass('disable');
+    await clearTimeout(this.timeOutId);
+    this.running = false;
+    console.log("stop()", moment().utcOffset("+05:30").format('h:mm:ss a'));
+    await localStorage.setItem('isRunning', JSON.stringify(this.running));
+    const logs = {
+      date: moment().format('DD-MM-yyyy'),
+      time: {
+        hours: this.hours,
+        minutes: this.minutes,
+        seconds: this.seconds
       }
-      this.timeOutFlag = false;
+    };
 
-      await localStorage.setItem('logs', JSON.stringify(logs));
-      await this._userService.storeLogs(logs).subscribe(res => console.log(res), err => console.log(err));
-      await clearInterval(this.intervalId);
-      resolve();
+    if(this.timeOutFlag){
+      await this.syncData('stop', moment().utcOffset("+05:30").format('h:mm:ss a'));
+      $("#stop").addClass('disable');
+      $("#start").removeClass('disable');
+    }
+    this.timeOutFlag = false;
 
-    });
+    await localStorage.setItem('logs', JSON.stringify(logs));
+    await this._userService.storeLogs(logs).subscribe(res => console.log(res), err => console.log(err));
+    await clearInterval(this.intervalId);
   }
 
   start() {
