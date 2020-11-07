@@ -248,6 +248,7 @@ export class HomeComponent implements OnInit {
       await this.checkStatus("offline")
       await this.stop()
       .then(async (fullFilled) => {
+
         await this.updateData();
       })
       .catch((err) => {
@@ -256,8 +257,8 @@ export class HomeComponent implements OnInit {
       console.log("is isSuccess ====>");
       console.log("You are succeess");
       
-      // await localStorage.removeItem('currentUser');
-      // this.router.navigate(['login']);
+      await localStorage.removeItem('currentUser');
+      this.router.navigate(['login']);
     }
     else{
       console.log("You are offline");
@@ -310,13 +311,13 @@ export class HomeComponent implements OnInit {
         await this.syncData('stop', moment().utcOffset("+05:30").format('h:mm:ss a'));
         $("#stop").addClass('disable');
         $("#start").removeClass('disable');
-        resolve();
       }
       this.timeOutFlag = false;
 
       await localStorage.setItem('logs', JSON.stringify(logs));
       await this._userService.storeLogs(logs).subscribe(res => console.log(res), err => console.log(err));
       await clearInterval(this.intervalId);
+      resolve();
 
     });
   }
@@ -357,12 +358,14 @@ export class HomeComponent implements OnInit {
 
           console.log("Data",data.toString('utf-8'));
           await this.updateRecordFile(flag, this.userLogDetails, logTime);
+          return
         } 
 
       });
     }
     else{
       console.log("File does not exist");
+      return
     }
     console.groupEnd();
   }
@@ -422,12 +425,12 @@ export class HomeComponent implements OnInit {
     }
 
     console.log("userLogDetails ==>", userLogDetails);
-    // await setTimeout(() => {
+    
       userLogDetails.isLatestVersion = false;
       await this.fs.writeFileSync(this.jsonFilePath,JSON.stringify(userLogDetails));
+      return; 
 
-
-    // }, 2000);
+    
 
     console.groupEnd();
   }
