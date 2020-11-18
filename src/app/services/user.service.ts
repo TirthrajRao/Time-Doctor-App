@@ -15,6 +15,15 @@ import { Socket } from 'ngx-socket-io';
 	providedIn: 'root'
 })
 export class UserService {
+
+	/*Get screen shot request form admin*/
+	// screenShotRequest = this.socket.fromEvent<string[]>('screenShotRequest');
+	
+	// screen = this.socket.on('screenShotRequest' , (data) => {
+	// 	console.log("Data on nce =======>", data);
+
+	// });
+
 	isLoggedIn: EventEmitter<any> = new EventEmitter<any>();
 	// documents = this.socket.fromEvent<any>('getStatus');
 
@@ -26,9 +35,19 @@ export class UserService {
 	}
 
 	changeStatus(status) {
-    this.socket.emit('statusChanged', status);
-    
-  }
+		this.socket.emit('statusChanged', status);
+
+	}
+
+	/*Send screen shot to admin*/
+	sendScreenShot(imageFileObj) {
+		this.socket.emit('getScreenShot', imageFileObj);
+	}	
+
+	/*Disconnet user from socket*/
+	disconnetSocket(){
+		this.socket.emit("logout" , {});
+	}
 
 
 	getdata() {
@@ -40,6 +59,7 @@ export class UserService {
 	}
 
 	loginUser(body) {
+		console.log(config.baseApiUrl + "user/login");
 		return this._http.post(config.baseApiUrl + "user/login", body).pipe(
 			map(user => {
 				console.log("login user=========>", user);

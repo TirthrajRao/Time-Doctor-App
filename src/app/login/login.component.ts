@@ -4,6 +4,7 @@ import { UserService } from '../services/user.service';
 import { Router } from '@angular/router';
 import { remote, dialog} from 'electron';
 import * as moment from 'moment';
+import { Socket, SocketIoConfig } from 'ngx-socket-io';
 
 
 @Component({
@@ -21,7 +22,9 @@ export class LoginComponent implements OnInit {
 	fs:any;
 	// currentDate:any = moment().format('DD-MM-yyyy');
   	currentDate:any = new Date().toISOString().split("T")[0] + "T18:30:00.000Z";
-	constructor(public _userService: UserService, private router: Router) {
+	constructor(public _userService: UserService, 
+		private router: Router,
+		private _socket: Socket) {
 		this.fs = (window as any).fs;
 
 		this.loginForm = new FormGroup({
@@ -45,9 +48,13 @@ export class LoginComponent implements OnInit {
 			this.isDisable = false;
 			this.isError = false;
 			localStorage.setItem('currentUser', JSON.stringify(response));
+			this._socket.removeAllListeners();
+			
+			
+			// this._socket.connect("http://localhost:3000" , {'force new connection': true});
 			this.router.navigate(['home']);
 		}, (err) => {
-			console.log(err.status);
+			console.log(err);
 			if (err.status == 400 || err.status == 401) {
 				this.errorMessage = "Please Check your Email/Password";
 			}

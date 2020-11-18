@@ -10,6 +10,10 @@ import { NumpadPipe } from './utils/numpad.pipe';
 import { SocketIoModule, SocketIoConfig } from 'ngx-socket-io';
 
 const config: SocketIoConfig = { url: 'http://localhost:3000', options: {} };
+// const config: SocketIoConfig = { url: 'http://192.168.43.71:3000', options: {} }; //pr'S WIFI
+// const config: SocketIoConfig = { url: 'http://192.168.1.31:3000', options: {} }; //Rao'S WIFI
+
+// const config: SocketIoConfig = { url: 'http://192.168.43.17:3000', options: {} }; //Ishita's wifi
 
 
 @NgModule({

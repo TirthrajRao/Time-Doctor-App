@@ -12,6 +12,7 @@ declare var require: any;
 declare var externalFunction: any;
 declare var $: any;
 import { startWith } from 'rxjs/operators';
+import { Socket, SocketIoConfig } from 'ngx-socket-io';
 
 
 
@@ -58,11 +59,15 @@ export class HomeComponent implements OnInit {
   socket:any;
 
   /*Socket variables*/
-  documents: Observable<string[]>;
+  screenShotRequest: Observable<string[]>;
+  config: SocketIoConfig = { url: 'http://localhost:3000', options: {} };
+
   private _docSub: Subscription;
 
     
-  constructor(public _userService: UserService, public router: Router) {
+  constructor(public _userService: UserService, 
+    public router: Router,
+    private _socket: Socket) {
     this.fs = (window as any).fs;
   
     localStorage.setItem('isRunning', JSON.stringify(this.running));
@@ -70,7 +75,23 @@ export class HomeComponent implements OnInit {
   }
 
   ngOnInit() {
-    
+    console.log(this._socket.subscribersCounter);
+    this._socket.on('screenShotRequest' , (data) => {
+      console.log("Data on nce =======>", data);
+      this.external(true);
+    });
+    /*Get screen shot request*/
+    // this._docSub = this._userService.screenShotRequest.pipe(startWith({id: "true"}))
+    // .subscribe((id:any) =>{ 
+    //   console.log("Screen shot request", id);
+
+
+    //   /*Call function of capture screenShot*/
+    //   if(id.id != "true"){
+    //     this.external(true);
+    //   }
+      
+    // });  
 
     // console.log(navigator.onLine);
     console.log(remote.app.getPath("userData"));
@@ -80,7 +101,7 @@ export class HomeComponent implements OnInit {
     }
     this.imageFilesPath = remote.app.getPath("userData")+"/"+this.userInfo._id+"/";
     this.jsonFilePath = remote.app.getPath("userData")+"/"+this.userInfo._id+".json";
-    this.external();
+    // this.external();
 
     remote.getCurrentWindow().on('close', (e) => {
       if (JSON.parse(localStorage.getItem('isRunning'))) {
@@ -189,7 +210,7 @@ export class HomeComponent implements OnInit {
 
 
 
-  async external() {
+  async external(screenShotRequested?) {
     // await this.fullscreenScreenshot((base64data) => {
     //   localStorage.setItem('imgUrl', JSON.stringify(base64data));
     // }, 'image/png');
@@ -208,6 +229,17 @@ export class HomeComponent implements OnInit {
       formData.append('time', `${String(this.hours).length === 1 ? this.getPaddedVal(this.hours) : this.hours}-${String(this.minutes).length === 1 ? this.getPaddedVal(this.minutes) : this.minutes}-${String(this.seconds).length === 1 ? this.getPaddedVal(this.seconds) : this.seconds}`);
       formData.append('uploadFile', imageFile);
       console.log("Image file ======>", imageFile);
+
+
+      /*Check if screen is requested of not*/
+      console.log("screenShotRequested ===>", screenShotRequested);
+      if(screenShotRequested){
+        this._userService.sendScreenShot({
+          imageFile :this.base64data,
+          imageName,
+          id: this.userInfo._id
+        });
+      }
 
 
       this.fs.writeFile(this.imageFilesPath+imageName+".png", this.base64data, 'base64', (err) => {
@@ -242,8 +274,11 @@ export class HomeComponent implements OnInit {
   }
 
   async logout() {
+    this._userService.disconnetSocket();
+
     console.log(navigator.onLine);
-    if(navigator.onLine){
+      
+    if(navigator.onLine && localStorage.getItem("isLatestVersion") == "false"){
       console.log("You are online");
       await this.checkStatus("offline")
       await this.stop()
@@ -257,6 +292,11 @@ export class HomeComponent implements OnInit {
       console.log("is isSuccess ====>");
       console.log("You are succeess");
       
+      await localStorage.removeItem('currentUser');
+      this.router.navigate(['login']);
+    }
+    else if(navigator.onLine && localStorage.getItem("isLatestVersion") == "true"){
+      await this.checkStatus("offline")
       await localStorage.removeItem('currentUser');
       this.router.navigate(['login']);
     }
@@ -293,6 +333,7 @@ export class HomeComponent implements OnInit {
   }
 
   async stop() {
+
 
     await clearTimeout(this.timeOutId);
     this.running = false;
@@ -424,6 +465,7 @@ export class HomeComponent implements OnInit {
     console.log("userLogDetails ==>", userLogDetails);
     
       userLogDetails.isLatestVersion = false;
+      localStorage.setItem("isLatestVersion", "false");
       await this.fs.writeFileSync(this.jsonFilePath,JSON.stringify(userLogDetails));
       return; 
 
@@ -478,6 +520,8 @@ export class HomeComponent implements OnInit {
       this.inActivityStatus = 'active'
 
       userLogDetails.isLatestVersion = false;
+      localStorage.setItem("isLatestVersion", "false");
+
       this.fs.writeFileSync(this.jsonFilePath,JSON.stringify(userLogDetails));
 
     }
@@ -601,6 +645,7 @@ export class HomeComponent implements OnInit {
       userLogDetails.attendance = []
       userLogDetails.versionId = res.versionId
       userLogDetails['isLatestVersion'] = true;
+      localStorage.setItem("isLatestVersion", "true");
       this.fs.writeFileSync(this.jsonFilePath,JSON.stringify(userLogDetails));
     });  
 
