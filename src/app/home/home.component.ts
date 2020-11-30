@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { UserService } from '../services/user.service';
 import { FormGroup, FormBuilder, FormControl, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -7,12 +7,13 @@ import * as socketIO from 'socket.io-client';
 import * as moment from 'moment';
 import * as _ from 'lodash';
 import { Observable, Observer, Subscription } from 'rxjs';
-import { remote, dialog} from 'electron';
+import { remote, dialog, ipcRenderer } from 'electron';
 declare var require: any;
 declare var externalFunction: any;
 declare var $: any;
 import { startWith } from 'rxjs/operators';
 import { Socket, SocketIoConfig } from 'ngx-socket-io';
+import Swal from 'sweetalert2'
 
 
 
@@ -42,21 +43,21 @@ export class HomeComponent implements OnInit {
   running = false;
   isFirst = true;
 
-  userLogDetails:any;
-  fs:any;
-  inActivityTime:any;
-  inActivityStatus:any = 'active';
-  inActivityTimeInterval:any
+  userLogDetails: any;
+  fs: any;
+  inActivityTime: any;
+  inActivityStatus: any = 'active';
+  inActivityTimeInterval: any
 
   // currentDate:any = moment().format('DD-MM-yyyy');
-  currentDate:any = new Date().toISOString().split("T")[0] + "T18:30:00.000Z";
+  currentDate: any = new Date().toISOString().split("T")[0] + "T18:30:00.000Z";
 
-  currentTime:any = moment().utcOffset("+05:30").format('h:mm:ss a');
-  jsonFilePath:any;
-  imageFilesPath:any;
+  currentTime: any = moment().utcOffset("+05:30").format('h:mm:ss a');
+  jsonFilePath: any;
+  imageFilesPath: any;
 
-  timeOutFlag:boolean = false;
-  socket:any;
+  timeOutFlag: boolean = false;
+  socket: any;
 
   /*Socket variables*/
   screenShotRequest: Observable<string[]>;
@@ -64,19 +65,22 @@ export class HomeComponent implements OnInit {
 
   private _docSub: Subscription;
 
-    
-  constructor(public _userService: UserService, 
+
+  constructor(public _userService: UserService,
     public router: Router,
-    private _socket: Socket) {
+    private _socket: Socket,
+    private _change: ChangeDetectorRef) {
     this.fs = (window as any).fs;
-  
-    localStorage.setItem('isRunning', JSON.stringify(this.running));
-    console.log(moment().format('DD-MM-yyyy'));
+
+
+
+
   }
+
 
   ngOnInit() {
     console.log(this._socket.subscribersCounter);
-    this._socket.on('screenShotRequest' , (data) => {
+    this._socket.on('screenShotRequest', (data) => {
       console.log("Data on nce =======>", data);
       this.external(true);
     });
@@ -90,7 +94,7 @@ export class HomeComponent implements OnInit {
     //   if(id.id != "true"){
     //     this.external(true);
     //   }
-      
+
     // });  
 
     // console.log(navigator.onLine);
@@ -99,38 +103,80 @@ export class HomeComponent implements OnInit {
       this.router.navigate(['/login']);
       // console.log("not working");
     }
-    this.imageFilesPath = remote.app.getPath("userData")+"/"+this.userInfo._id+"/";
-    this.jsonFilePath = remote.app.getPath("userData")+"/"+this.userInfo._id+".json";
+    this.imageFilesPath = remote.app.getPath("userData") + "/" + this.userInfo._id + "/";
+    this.jsonFilePath = remote.app.getPath("userData") + "/" + this.userInfo._id + ".json";
     // this.external();
 
-    remote.getCurrentWindow().on('close', (e) => {
-      if (JSON.parse(localStorage.getItem('isRunning'))) {
-        const choice = dialog.showMessageBox(
-          remote.getCurrentWindow(),
-          {
-            type: 'question',
-            buttons: ['Yes', 'No'],
-            title: 'Confirm',
-            message: 'Your timer is running. Do you really want to close the application?'
+    console.log();
+
+    remote.getCurrentWindow().on("close", (event) => {
+      event.preventDefault();
+      console.log("before message box");
+      dialog.showMessageBox(
+        remote.getCurrentWindow(),
+        {
+          message: "Test",
+          buttons: ["Default Button", "Cancel Button"],
+          defaultId: 0, // bound to buttons array
+          cancelId: 1 // bound to buttons array
+        })
+        .then(result => {
+          if (result.response === 0) {
+            // bound to buttons array
+            console.log("Default button clicked.");
+          } else if (result.response === 1) {
+            // bound to buttons array
+            console.log("Cancel button clicked.");
           }
-        )
-        console.log(choice);
-        if (choice) {
-          const logs = {
-            date: moment().format('DD-MM-yyyy'),
-            time: {
-              hours: this.hours,
-              minutes: this.minutes,
-              seconds: this.seconds
-            }
-          };
-          localStorage.setItem('logs', JSON.stringify(logs));
-          this._userService.storeLogs(logs).subscribe(res => e.preventDefault(), err => console.log(err));
         }
-      }
-    })
+        );
+      console.log("after message box");
+    });
+
+
+    // remote.getCurrentWindow().on('close', (e) => {
+    //   localStorage.setItem("Pushpraj", "hoy");
+    //   if (JSON.parse(localStorage.getItem('isRunning'))) {
+    //     const choice = remote.dialog.showMessageBox(
+    //       remote.getCurrentWindow(),
+    //       {
+    //         type: 'question',
+    //         buttons: ['Yes', 'No'],
+    //         title: 'Confirm',
+    //         message: 'Your timer is running. Do you really want to close the application?'
+    //       }
+    //     )
+    //     console.log(choice);
+    //     if (choice) {
+    //       const logs = {
+    //         date: moment().format('DD-MM-yyyy'),
+    //         time: {
+    //           hours: this.hours,
+    //           minutes: this.minutes,
+    //           seconds: this.seconds
+    //         }
+    //       };
+    //       localStorage.setItem('logs', JSON.stringify(logs));
+    //       this._userService.storeLogs(logs).subscribe(res => e.preventDefault(), err => console.log(err));
+    //     }
+    //   }
+    //   else {
+    //     const choice = dialog.showMessageBox(
+    //       remote.getCurrentWindow(),
+    //       {
+    //         type: 'question',
+    //         buttons: ['Yes', 'No'],
+    //         title: 'Confirm',
+    //         message: 'Your timer is running. Do you really want to close the application?'
+    //       }
+    //     )
+    //   }
+    // });
+
+
+
     this._userService.getLogs().subscribe(async (res: any) => {
-      if(res.logs){
+      if (res.logs) {
         const logs = {
           date: res.logs.date,
           time: res.logs.time
@@ -145,6 +191,7 @@ export class HomeComponent implements OnInit {
     }, err => {
       console.log(err)
     })
+    this.checkLastLog();
   }
 
   startCapturing() {
@@ -233,28 +280,28 @@ export class HomeComponent implements OnInit {
 
       /*Check if screen is requested of not*/
       console.log("screenShotRequested ===>", screenShotRequested);
-      if(screenShotRequested){
+      if (screenShotRequested) {
         this._userService.sendScreenShot({
-          imageFile :this.base64data,
+          imageFile: this.base64data,
           imageName,
           id: this.userInfo._id
         });
       }
 
 
-      this.fs.writeFile(this.imageFilesPath+imageName+".png", this.base64data, 'base64', (err) => {
-        if (err){
+      this.fs.writeFile(this.imageFilesPath + imageName + ".png", this.base64data, 'base64', (err) => {
+        if (err) {
           return console.error(err)
 
         }
-        else{
-          console.log('file saved to ', this.imageFilesPath+imageName);
-          this.syncData('image', this.imageFilesPath+imageName+".png");
+        else {
+          console.log('file saved to ', this.imageFilesPath + imageName);
+          this.syncData('image', this.imageFilesPath + imageName + ".png");
 
         }
         clearTimeout(this.timeout);
 
-        
+
       });
 
 
@@ -277,8 +324,8 @@ export class HomeComponent implements OnInit {
     this._userService.disconnetSocket();
 
     console.log(navigator.onLine);
-      
-    if(navigator.onLine && localStorage.getItem("isLatestVersion") == "false"){
+
+    if (navigator.onLine && localStorage.getItem("isLatestVersion") == "false") {
       console.log("You are online");
       await this.checkStatus("offline")
       await this.stop()
@@ -287,20 +334,25 @@ export class HomeComponent implements OnInit {
         this.updateData();
 
       }, 1000)
-      
-    
+
+
       console.log("is isSuccess ====>");
       console.log("You are succeess");
-      
+
       await localStorage.removeItem('currentUser');
       this.router.navigate(['login']);
     }
-    else if(navigator.onLine && localStorage.getItem("isLatestVersion") == "true"){
+    else if (navigator.onLine && localStorage.getItem("isLatestVersion") == "true") {
       await this.checkStatus("offline")
       await localStorage.removeItem('currentUser');
       this.router.navigate(['login']);
     }
-    else{
+    else {
+      Swal.fire(
+        'The Internet?',
+        'Please check your internet connection?',
+        'question'
+      )
       console.log("You are offline");
     }
   }
@@ -308,16 +360,17 @@ export class HomeComponent implements OnInit {
   timer() {
     this.timeOutId = setTimeout(() => {
       console.log("times()", moment().utcOffset("+05:30").format('h:mm:ss a'));
-    if(!this.timeOutFlag){
-      this.syncData('start', moment().utcOffset("+05:30").format('h:mm:ss a')); 
-      this.timeOutFlag = true; 
-    }
+      if (!this.timeOutFlag) {
+        this.syncData('start', moment().utcOffset("+05:30").format('h:mm:ss a'));
+        this.timeOutFlag = true;
+      }
       this.updateTime();
       this.timer();
     }, 1000);
   }
 
   updateTime() {
+    // alert("Timmer called")
     this.seconds++;
     if (this.seconds === 60) {
       this.seconds = 0;
@@ -348,7 +401,7 @@ export class HomeComponent implements OnInit {
       }
     };
 
-    if(this.timeOutFlag){
+    if (this.timeOutFlag) {
       await this.syncData('stop', moment().utcOffset("+05:30").format('h:mm:ss a'));
       $("#stop").addClass('disable');
       $("#start").removeClass('disable');
@@ -361,7 +414,9 @@ export class HomeComponent implements OnInit {
   }
 
   start() {
-    if(!this.running) {
+    console.log("!this.running ==>", !this.running);
+
+    if (!this.running) {
       this.timer();
       $("#start").addClass('disable');
       $("#stop").removeClass('disable');
@@ -380,48 +435,48 @@ export class HomeComponent implements OnInit {
   }
 
 
-  async syncData(flag, logTime?){
+  async syncData(flag, logTime?) {
     console.group("syncData");
     console.log("Flag ==>", flag);
     if (this.fs.existsSync(this.jsonFilePath)) {
       console.log("Files exitssss");
-      await this.fs.readFile(this.jsonFilePath,async  (err, data) => {
+      await this.fs.readFile(this.jsonFilePath, async (err, data) => {
 
         if (err) console.log("error", err);
         else {
           console.log(JSON.parse(data));
           this.userLogDetails = JSON.parse(data);
 
-          
 
-          console.log("Data",data.toString('utf-8'));
+
+          console.log("Data", data.toString('utf-8'));
           await this.updateRecordFile(flag, this.userLogDetails, logTime);
           return
-        } 
+        }
 
       });
     }
-    else{
+    else {
       console.log("File does not exist");
       return
     }
     console.groupEnd();
   }
 
-  async updateRecordFile(flag, userLogDetails, logTime?){
+  async updateRecordFile(flag, userLogDetails, logTime?) {
     console.group("updateRecordFile");
     console.log(flag, userLogDetails);
 
     let lastAttendanceLog = userLogDetails.attendance[userLogDetails.attendance.length - 1];
     console.log(lastAttendanceLog)
-    if((!lastAttendanceLog) || (lastAttendanceLog.date != this.currentDate)){
+    if ((!lastAttendanceLog) || (lastAttendanceLog.date != this.currentDate)) {
       userLogDetails.attendance.push({
         date: this.currentDate,
         timeLog: [],
         difference: '-',
         inActivityTime: 0,
         images: []
-      });      
+      });
     }
 
     lastAttendanceLog = userLogDetails.attendance[userLogDetails.attendance.length - 1];
@@ -431,61 +486,61 @@ export class HomeComponent implements OnInit {
     switch (flag) {
       case "start":
         this.inActivityTimeInterval = setInterval(async () => {
-           await this.calculateInactivityTime(userLogDetails, previousInActivityTime);        
+          await this.calculateInactivityTime(userLogDetails, previousInActivityTime);
         }, 1000);
-        let timeLogObject:any = {};
+        let timeLogObject: any = {};
         timeLogObject = {
           in: logTime,
           out: "-"
-        }        
+        }
         lastAttendanceLog.timeLog.push(timeLogObject);
-        
+
 
 
         break;
-      
+
       case "stop":
         clearInterval(this.inActivityTimeInterval);
-        let lastTimeLogObject = lastAttendanceLog.timeLog[lastAttendanceLog.timeLog.length - 1];        
+        let lastTimeLogObject = lastAttendanceLog.timeLog[lastAttendanceLog.timeLog.length - 1];
         console.log("lastAttendanceLog", lastTimeLogObject);
-        
+
         lastTimeLogObject.out = logTime;
         lastAttendanceLog = await this.calculateDifference(lastAttendanceLog)
-        
+
         break;
-        
+
       case "image":
-        lastAttendanceLog.images.push({path: logTime});
-        break;        
+        lastAttendanceLog.images.push({ path: logTime });
+        break;
       default:
         // code...
         break;
     }
 
     console.log("userLogDetails ==>", userLogDetails);
-    
-      userLogDetails.isLatestVersion = false;
-      localStorage.setItem("isLatestVersion", "false");
-      await this.fs.writeFileSync(this.jsonFilePath,JSON.stringify(userLogDetails));
-      return; 
 
-    
+    userLogDetails.isLatestVersion = false;
+    localStorage.setItem("isLatestVersion", "false");
+    await this.fs.writeFileSync(this.jsonFilePath, JSON.stringify(userLogDetails));
+    return;
+
+
 
     console.groupEnd();
   }
 
 
-  calculateDifference(currentAttendanceLog){
+  calculateDifference(currentAttendanceLog) {
     console.group('calculateDifference', currentAttendanceLog);
-    var in1 = currentAttendanceLog.timeLog[currentAttendanceLog.timeLog.length -1].in;
-    var out = currentAttendanceLog.timeLog[currentAttendanceLog.timeLog.length -1].out;
-    var inn =  moment(in1, 'hh:mm:ss: a').diff(moment().startOf('day'), 'seconds');    
-    var outt =  moment(out, 'hh:mm:ss: a').diff(moment().startOf('day'), 'seconds');    
+    var in1 = currentAttendanceLog.timeLog[currentAttendanceLog.timeLog.length - 1].in;
+    var out = currentAttendanceLog.timeLog[currentAttendanceLog.timeLog.length - 1].out;
+    var inn = moment(in1, 'hh:mm:ss: a').diff(moment().startOf('day'), 'seconds');
+    var outt = moment(out, 'hh:mm:ss: a').diff(moment().startOf('day'), 'seconds');
     // console.log("in time ==>", in1 , " seconsds ===>" , inn);
     // console.log("out time ==>", out , "seconsds==>" , outt);
     let seconds = outt - inn;
-    if(currentAttendanceLog.difference != "-"){
-      var difference = moment(currentAttendanceLog.difference, 'hh:mm:ss: a').diff(moment().startOf('day'), 'seconds');   
+    if (currentAttendanceLog.difference != "-") {
+      var difference = moment(currentAttendanceLog.difference, 'hh:mm:ss: a').diff(moment().startOf('day'), 'seconds');
       // console.log("difference ======>" , difference);
       seconds = seconds + difference;
     }
@@ -495,9 +550,9 @@ export class HomeComponent implements OnInit {
     var m = Math.floor(seconds % 3600 / 60);
     var s = Math.floor(seconds % 3600 % 60);
 
-    var time =  ('0' + h).slice(-2) + ":" + ('0' + m).slice(-2) + ":" + ('0' + s).slice(-2);
+    var time = ('0' + h).slice(-2) + ":" + ('0' + m).slice(-2) + ":" + ('0' + s).slice(-2);
 
-    console.log("time ==========+>"  , time);
+    console.log("time ==========+>", time);
     currentAttendanceLog.difference = time;
     currentAttendanceLog.status = "Absent";
 
@@ -506,14 +561,14 @@ export class HomeComponent implements OnInit {
   }
 
 
-  calculateInactivityTime(userLogDetails, previousInActivityTime){
+  calculateInactivityTime(userLogDetails, previousInActivityTime) {
     console.group("calculateInactivityTime");
     let lastAttendanceLog = userLogDetails.attendance[userLogDetails.attendance.length - 1];
 
     // console.log("remote", remote.powerMonitor.getSystemIdleTime())
     // console.log("remote thresold", remote.powerMonitor.getSystemIdleState(5) == 'idle', remote.powerMonitor.getSystemIdleState(120))
 
-    if(!remote.powerMonitor.getSystemIdleTime() && this.inActivityStatus == 'idle'){
+    if (!remote.powerMonitor.getSystemIdleTime() && this.inActivityStatus == 'idle') {
       console.log("In if part");
       lastAttendanceLog.inActivityTime = lastAttendanceLog.inActivityTime + this.inActivityTime;
       console.log("userLogDetails =====>", userLogDetails);
@@ -522,26 +577,26 @@ export class HomeComponent implements OnInit {
       userLogDetails.isLatestVersion = false;
       localStorage.setItem("isLatestVersion", "false");
 
-      this.fs.writeFileSync(this.jsonFilePath,JSON.stringify(userLogDetails));
+      this.fs.writeFileSync(this.jsonFilePath, JSON.stringify(userLogDetails));
 
     }
-    else if(remote.powerMonitor.getSystemIdleState(5) == 'idle'){
+    else if (remote.powerMonitor.getSystemIdleState(5) == 'idle') {
       // console.log("In else if part");
-        this.inActivityStatus = 'idle'
-        this.inActivityTime = remote.powerMonitor.getSystemIdleTime();
+      this.inActivityStatus = 'idle'
+      this.inActivityTime = remote.powerMonitor.getSystemIdleTime();
     }
-    else{
+    else {
       // console.log("In else part");
     }
 
-    
+
     console.groupEnd();
   }
 
 
   /*API call*/
   /*Update data to database*/
-  updateData(){
+  updateData() {
     console.group("updateData");
 
     /*Fetch json file*/
@@ -560,7 +615,7 @@ export class HomeComponent implements OnInit {
         const userLogDetails = JSON.parse(data);
 
         /*Check for lastest version*/
-        if(!userLogDetails.isLatestVersion){
+        if (!userLogDetails.isLatestVersion) {
           // Select the image
 
           let formData = new FormData();
@@ -568,7 +623,7 @@ export class HomeComponent implements OnInit {
 
 
 
-          details.append('jsonData',JSON.stringify(userLogDetails));            
+          details.append('jsonData', JSON.stringify(userLogDetails));
           details.append('userId', this.userInfo._id);
           console.log(userLogDetails, details);
           await this._userService.uploadbase64Img(details).subscribe((res) => {
@@ -583,25 +638,25 @@ export class HomeComponent implements OnInit {
           })
 
         }
-        else{
+        else {
           console.log("Latest log");
         }
-      } 
+      }
 
     });
     console.groupEnd();
-  }    
-  
+  }
 
-  appendFilesToJson(userLogDetails){
-        const formData = new FormData();
-        // formData.append('userLogDetails',JSON.stringify(userLogDetails));            
+
+  appendFilesToJson(userLogDetails) {
+    const formData = new FormData();
+    // formData.append('userLogDetails',JSON.stringify(userLogDetails));            
 
     _.forEach(userLogDetails.attendance, (singleAttendance, logIndex) => {
-      console.log(singleAttendance);  
+      console.log(singleAttendance);
       _.forEach(singleAttendance.images, async (singleImage, imageIndex) => {
-        console.log(singleImage);  
-        const contents = this.fs.readFileSync(singleImage.path, {encoding: 'base64'});          
+        console.log(singleImage);
+        const contents = this.fs.readFileSync(singleImage.path, { encoding: 'base64' });
         console.log(contents)
 
         const imageBlob: Blob = await this.b64toBlob(contents, "image/png");
@@ -612,24 +667,24 @@ export class HomeComponent implements OnInit {
         console.log(imageName)
         const imageFile: File = new File([imageBlob], imageName, {
           type: "image/png"
-        });        
+        });
         // console.log(userLogDetails.attendance[logIndex].images);
-        formData.append('uploads', imageFile, imageName); 
-        singleImage.path =  userLogDetails._id + '/' + imageName;          
+        formData.append('uploads', imageFile, imageName);
+        singleImage.path = userLogDetails._id + '/' + imageName;
         // userLogDetails.attendance[logIndex].images[imageIndex]["file"] = imageFile;
       });
-    });    
+    });
     console.log(userLogDetails)
-    formData.append('userLogDetails',JSON.stringify(userLogDetails));            
-    
-    
+    formData.append('userLogDetails', JSON.stringify(userLogDetails));
+
+
     return formData;
   }
 
 
   /*Check online offline status of user*/
-  checkStatus(status){
-  
+  checkStatus(status) {
+
     console.log(navigator.onLine);
     const object = {
       status,
@@ -639,15 +694,15 @@ export class HomeComponent implements OnInit {
   }
 
 
-  removeDataFromJsonFile(res){
+  removeDataFromJsonFile(res) {
     this.fs.readFile(this.jsonFilePath, async (err, data) => {
       const userLogDetails = JSON.parse(data);
       userLogDetails.attendance = []
       userLogDetails.versionId = res.versionId
       userLogDetails['isLatestVersion'] = true;
       localStorage.setItem("isLatestVersion", "true");
-      this.fs.writeFileSync(this.jsonFilePath,JSON.stringify(userLogDetails));
-    });  
+      this.fs.writeFileSync(this.jsonFilePath, JSON.stringify(userLogDetails));
+    });
 
     const files = this.fs.readdirSync(this.imageFilesPath)
 
@@ -660,8 +715,26 @@ export class HomeComponent implements OnInit {
     }
   }
 
+  checkLastLog() {
+    this.fs.readFile(this.jsonFilePath, (err, data) => {
+      const userLogDetails = JSON.parse(data);
+      console.log(userLogDetails);
+      let attendanceLog = userLogDetails.attendance[userLogDetails.attendance.length - 1]
+      console.log(attendanceLog);
+      this._change.detectChanges;
 
-
+      if (attendanceLog && attendanceLog.timeLog.length && attendanceLog.timeLog[attendanceLog.timeLog.length - 1].out == '-') {
+        $("#start").addClass('disable');
+        this.running = false
+        this.start();
+        $("#stop").removeClass('disable');
+      }
+      else {
+        $("#stop").addClass('disable');
+        $("#start").removeClass('disable');
+      }
+    });
+  }
 
 
 
@@ -696,7 +769,7 @@ export class HomeComponent implements OnInit {
   //       video.remove();
   //       try {
 
-    ch (e) { }
+  ch(e) { }
   //     }
 
   //     video.srcObject = stream;
