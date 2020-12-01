@@ -21,7 +21,7 @@ export class LoginComponent implements OnInit {
 	timeString: any;
 
 	fs: any;
-	// currentDate:any = moment().format('DD-MM-yyyy');
+	
 	currentDate: any = new Date().toISOString().split("T")[0] + "T18:30:00.000Z";
 	constructor(public _userService: UserService,
 		private router: Router,
@@ -32,10 +32,18 @@ export class LoginComponent implements OnInit {
 			email: new FormControl('', Validators.required),
 			password: new FormControl('', Validators.required)
 		});
+		
+		remote.getCurrentWindow().on('close', (e) => {
+			console.log(!JSON.parse(localStorage.getItem( 'isRunning')) && !JSON.parse(localStorage.getItem('isHomeComponent')), !JSON.parse(localStorage.getItem('isRunning')) , !JSON.parse(localStorage.getItem('isHomeComponent')));
+			if(!JSON.parse(localStorage.getItem('isRunning')) && !JSON.parse(localStorage.getItem('isHomeComponent'))){
+				console.log("In login", remote.getCurrentWindow());
+				remote.app.exit(0)	;
+			}
+			});
 	}
 
 	ngOnInit() {
-
+		localStorage.setItem("isHomeComponent", "false");
 		console.log("user path ===>", remote.app.getPath("userData"));
 		console.log("app path ===>", remote.app.getPath("appData"));
 		console.log("remote", remote.powerMonitor.getSystemIdleTime())
@@ -46,6 +54,8 @@ export class LoginComponent implements OnInit {
 
 		if (navigator.onLine) {
 			this._userService.loginUser(value).subscribe((response) => {
+				// remote.app.removeListener()
+
 				console.log("successfull login", response);
 				this.generateLoggedInUserFile(response)
 				this.generateLoggedInUserFolder(response);

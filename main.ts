@@ -1,10 +1,11 @@
-import { app, BrowserWindow, screen } from 'electron';
+import { app, BrowserWindow, screen, Menu } from 'electron';
 import * as path from 'path';
 import * as url from 'url';
+import * as electronLocalshortcut from 'electron-localshortcut'
 
 let win: BrowserWindow = null;
 const args = process.argv.slice(1),
-    serve = args.some(val => val === '--serve');
+  serve = args.some(val => val === '--serve');
 
 function createWindow(): BrowserWindow {
 
@@ -24,6 +25,17 @@ function createWindow(): BrowserWindow {
     },
   });
 
+
+  // Disable refresh
+  win.on('focus', (event) => {
+    console.log("event of on fucous ");
+    electronLocalshortcut.register(win, ['CommandOrControl+R', 'CommandOrControl+Shift+R', 'F5'], () => { })
+  })
+
+  win.on('blur', (event) => {
+    console.log("event of on blue ");
+    electronLocalshortcut.unregisterAll(win)
+  })
   if (serve) {
     require('electron-reload')(__dirname, {
       electron: require(`${__dirname}/node_modules/electron`)
@@ -41,6 +53,12 @@ function createWindow(): BrowserWindow {
     win.webContents.openDevTools();
   }
 
+  win.on('close', (e) => {
+    // Do your control here
+
+    e.preventDefault();
+
+  });
   // Emitted when the window is closed.
   win.on('closed', () => {
     // Dereference the window object, usually you would store window
@@ -49,14 +67,38 @@ function createWindow(): BrowserWindow {
     // if (JSON.parse(localStorage.getItem('isRunning'))) {
     //   alert('Your timer is running')
     // } else {
-      win = null;
+    win = null;
     // }
   });
+
 
   return win;
 }
 
 try {
+
+  // Custom menu.
+  const isMac = process.platform === 'darwin'
+
+  const template: any = [
+    // { role: 'fileMenu' }
+    {
+      label: 'File',
+      submenu: [
+        isMac ? { role: 'close' } : { role: 'quit' }
+      ]
+    },
+    // { role: 'editMenu' }
+    {
+      label: 'Window',
+      submenu: [
+        { role: 'minimize' },
+      ]
+    }
+  ]
+
+  const menu = Menu.buildFromTemplate(template)
+  Menu.setApplicationMenu(menu)
 
   // This method will be called when Electron has finished
   // initialization and is ready to create browser windows.

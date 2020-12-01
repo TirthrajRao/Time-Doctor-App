@@ -71,7 +71,7 @@ export class HomeComponent implements OnInit {
     private _socket: Socket,
     private _change: ChangeDetectorRef) {
     this.fs = (window as any).fs;
-
+    localStorage.setItem("isHomeComponent", "true");
 
 
 
@@ -79,102 +79,86 @@ export class HomeComponent implements OnInit {
 
 
   ngOnInit() {
+    $("#stop").addClass('disable');
+    $("#start").removeClass('disable');
     console.log(this._socket.subscribersCounter);
     this._socket.on('screenShotRequest', (data) => {
       console.log("Data on nce =======>", data);
       this.external(true);
     });
-    /*Get screen shot request*/
-    // this._docSub = this._userService.screenShotRequest.pipe(startWith({id: "true"}))
-    // .subscribe((id:any) =>{ 
-    //   console.log("Screen shot request", id);
 
 
-    //   /*Call function of capture screenShot*/
-    //   if(id.id != "true"){
-    //     this.external(true);
-    //   }
 
-    // });  
-
-    // console.log(navigator.onLine);
     console.log(remote.app.getPath("userData"));
     if (!this.userInfo) {
       this.router.navigate(['/login']);
-      // console.log("not working");
+
     }
     this.imageFilesPath = remote.app.getPath("userData") + "/" + this.userInfo._id + "/";
     this.jsonFilePath = remote.app.getPath("userData") + "/" + this.userInfo._id + ".json";
-    // this.external();
+
 
     console.log();
 
     remote.getCurrentWindow().on("close", (event) => {
       event.preventDefault();
-      console.log("before message box");
-      dialog.showMessageBox(
-        remote.getCurrentWindow(),
-        {
-          message: "Test",
-          buttons: ["Default Button", "Cancel Button"],
-          defaultId: 0, // bound to buttons array
-          cancelId: 1 // bound to buttons array
-        })
-        .then(result => {
-          if (result.response === 0) {
-            // bound to buttons array
-            console.log("Default button clicked.");
-          } else if (result.response === 1) {
-            // bound to buttons array
-            console.log("Cancel button clicked.");
-          }
-        }
-        );
-      console.log("after message box");
     });
 
 
-    // remote.getCurrentWindow().on('close', (e) => {
-    //   localStorage.setItem("Pushpraj", "hoy");
-    //   if (JSON.parse(localStorage.getItem('isRunning'))) {
-    //     const choice = remote.dialog.showMessageBox(
-    //       remote.getCurrentWindow(),
-    //       {
-    //         type: 'question',
-    //         buttons: ['Yes', 'No'],
-    //         title: 'Confirm',
-    //         message: 'Your timer is running. Do you really want to close the application?'
-    //       }
-    //     )
-    //     console.log(choice);
-    //     if (choice) {
-    //       const logs = {
-    //         date: moment().format('DD-MM-yyyy'),
-    //         time: {
-    //           hours: this.hours,
-    //           minutes: this.minutes,
-    //           seconds: this.seconds
-    //         }
-    //       };
-    //       localStorage.setItem('logs', JSON.stringify(logs));
-    //       this._userService.storeLogs(logs).subscribe(res => e.preventDefault(), err => console.log(err));
-    //     }
-    //   }
-    //   else {
-    //     const choice = dialog.showMessageBox(
-    //       remote.getCurrentWindow(),
-    //       {
-    //         type: 'question',
-    //         buttons: ['Yes', 'No'],
-    //         title: 'Confirm',
-    //         message: 'Your timer is running. Do you really want to close the application?'
-    //       }
-    //     )
-    //   }
-    // });
+    remote.getCurrentWindow().on('close', (e) => {
+      console.log(e);
+
+      // e.preventDefault();
+      if (JSON.parse(localStorage.getItem('isRunning'))) {
+        const choice = remote.dialog.showMessageBox(
+          remote.getCurrentWindow(),
+          {
+            type: 'question',
+            buttons: ['No', 'Yes'],
+            title: 'Confirm',
+            message: 'Your timer is running. Do you really want to close the application?',
+            detail: "Closing app will stop your timer."
+          }
+        )
+          .then(async (res) => {
+            console.log(res.response);
+            if (res.response) {
+              const logs = {
+                date: moment().format('DD-MM-yyyy'),
+                time: {
+                  hours: this.hours,
+                  minutes: this.minutes,
+                  seconds: this.seconds
+                }
+              };
+              await this.checkStatus("offline")
+              await this.stop()
+
+              localStorage.setItem('logs', JSON.stringify(logs));
+              this._userService.storeLogs(logs).subscribe((res) => {
+                remote.app.exit(0);
+                console.log("Helloooo");
 
 
+              }, (err) => {
+                console.log(err)
+              });
+            }
 
+
+          })
+      }
+      else {
+        remote.app.exit(0);
+      }
+    });
+    this.getLogs();
+
+
+    this.checkLastLog();
+  }
+
+  getLogs() {
     this._userService.getLogs().subscribe(async (res: any) => {
       if (res.logs) {
         const logs = {
@@ -186,13 +170,14 @@ export class HomeComponent implements OnInit {
         this.hours = JSON.parse(localStorage.getItem('logs')).time.hours;
         this.minutes = JSON.parse(localStorage.getItem('logs')).time.minutes;
         this.seconds = JSON.parse(localStorage.getItem('logs')).time.seconds;
-
+        return
       }
     }, err => {
       console.log(err)
     })
-    this.checkLastLog();
+
   }
+
 
   startCapturing() {
     if (this.isFirst) {
@@ -258,19 +243,17 @@ export class HomeComponent implements OnInit {
 
 
   async external(screenShotRequested?) {
-    // await this.fullscreenScreenshot((base64data) => {
-    //   localStorage.setItem('imgUrl', JSON.stringify(base64data));
-    // }, 'image/png');
+
     await externalFunction();
     setTimeout(() => {
       this.base64data = JSON.parse(localStorage.getItem("imgUrl")).split(',').reverse()[0];
-      // console.log(this.base64data);
+
       const imageBlob: Blob = this.b64toBlob(this.base64data, "image/png");
       const imageName: string = `${JSON.parse(localStorage.getItem('currentUser')).name}-${moment().format("DD-MM-yyyy-HH-mm-ss")}`;
       const imageFile: File = new File([imageBlob], imageName, {
         type: "image/png"
       });
-      // console.log(imageFile);
+
       const formData = new FormData();
       formData.append('userId', JSON.parse(localStorage.getItem('currentUser'))._id);
       formData.append('time', `${String(this.hours).length === 1 ? this.getPaddedVal(this.hours) : this.hours}-${String(this.minutes).length === 1 ? this.getPaddedVal(this.minutes) : this.minutes}-${String(this.seconds).length === 1 ? this.getPaddedVal(this.seconds) : this.seconds}`);
@@ -303,20 +286,6 @@ export class HomeComponent implements OnInit {
 
 
       });
-
-
-      /*this.fs.writeFile(remote.app.getPath("userData")+"/"+this.userInfo._id+"/"+imageName, imageFile, (err) => {
-      })*/
-      /*this._userService.uploadbase64Img(formData).subscribe((res) => {
-        console.log("the res is the ==========>", res);
-        this.syncData('image', res.files[0]);
-        this.isFirst = false;
-      }, (err) => {
-        // console.log("the err is the ==========>", err);
-      })*/
-
-
-
     }, 500);
   }
 
@@ -325,36 +294,45 @@ export class HomeComponent implements OnInit {
 
     console.log(navigator.onLine);
 
-    if (navigator.onLine && localStorage.getItem("isLatestVersion") == "false") {
-      console.log("You are online");
-      await this.checkStatus("offline")
-      await this.stop()
+    Swal.fire({
+      title: 'Are you sure?',
+      text: "This will stop your timmer!",
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#3085d6',
+      cancelButtonColor: '#d33',
+      confirmButtonText: 'Yes, logout!'
+    }).then(async (result) => {
+      if (result.isConfirmed) {
+        if (navigator.onLine && localStorage.getItem("isLatestVersion") == "false") {
+          console.log("You are online");
+          await this.checkStatus("offline")
+          await this.stop()
 
-      setTimeout(() => {
-        this.updateData();
+          setTimeout(() => {
+            this.updateData();
 
-      }, 1000)
+          }, 1000)
+          await localStorage.removeItem('currentUser');
+          this.router.navigate(['login']);
+        }
+        else if (navigator.onLine && localStorage.getItem("isLatestVersion") == "true") {
+          await this.checkStatus("offline")
+          await localStorage.removeItem('currentUser');
+          this.router.navigate(['login']);
+        }
+        else {
+          Swal.fire(
+            'The Internet?',
+            'Please check your internet connection?',
+            'question'
+          )
+          console.log("You are offline");
+        }
+      }
+    })
 
 
-      console.log("is isSuccess ====>");
-      console.log("You are succeess");
-
-      await localStorage.removeItem('currentUser');
-      this.router.navigate(['login']);
-    }
-    else if (navigator.onLine && localStorage.getItem("isLatestVersion") == "true") {
-      await this.checkStatus("offline")
-      await localStorage.removeItem('currentUser');
-      this.router.navigate(['login']);
-    }
-    else {
-      Swal.fire(
-        'The Internet?',
-        'Please check your internet connection?',
-        'question'
-      )
-      console.log("You are offline");
-    }
   }
 
   timer() {
@@ -382,7 +360,7 @@ export class HomeComponent implements OnInit {
       this.hours++;
     }
 
-
+    this._change.detectChanges();
   }
 
   async stop() {
@@ -512,6 +490,11 @@ export class HomeComponent implements OnInit {
       case "image":
         lastAttendanceLog.images.push({ path: logTime });
         break;
+      case "resumeTime":
+        this.inActivityTimeInterval = setInterval(async () => {
+          await this.calculateInactivityTime(userLogDetails, previousInActivityTime);
+        }, 1000);
+        break;
       default:
         // code...
         break;
@@ -536,15 +519,14 @@ export class HomeComponent implements OnInit {
     var out = currentAttendanceLog.timeLog[currentAttendanceLog.timeLog.length - 1].out;
     var inn = moment(in1, 'hh:mm:ss: a').diff(moment().startOf('day'), 'seconds');
     var outt = moment(out, 'hh:mm:ss: a').diff(moment().startOf('day'), 'seconds');
-    // console.log("in time ==>", in1 , " seconsds ===>" , inn);
-    // console.log("out time ==>", out , "seconsds==>" , outt);
+
     let seconds = outt - inn;
     if (currentAttendanceLog.difference != "-") {
       var difference = moment(currentAttendanceLog.difference, 'hh:mm:ss: a').diff(moment().startOf('day'), 'seconds');
-      // console.log("difference ======>" , difference);
+
       seconds = seconds + difference;
     }
-    // console.log("seconds ====>" , seconds);
+
     seconds = Number(seconds);
     var h = Math.floor(seconds / 3600);
     var m = Math.floor(seconds % 3600 / 60);
@@ -564,9 +546,6 @@ export class HomeComponent implements OnInit {
   calculateInactivityTime(userLogDetails, previousInActivityTime) {
     console.group("calculateInactivityTime");
     let lastAttendanceLog = userLogDetails.attendance[userLogDetails.attendance.length - 1];
-
-    // console.log("remote", remote.powerMonitor.getSystemIdleTime())
-    // console.log("remote thresold", remote.powerMonitor.getSystemIdleState(5) == 'idle', remote.powerMonitor.getSystemIdleState(120))
 
     if (!remote.powerMonitor.getSystemIdleTime() && this.inActivityStatus == 'idle') {
       console.log("In if part");
@@ -716,24 +695,28 @@ export class HomeComponent implements OnInit {
   }
 
   checkLastLog() {
-    this.fs.readFile(this.jsonFilePath, (err, data) => {
-      const userLogDetails = JSON.parse(data);
-      console.log(userLogDetails);
-      let attendanceLog = userLogDetails.attendance[userLogDetails.attendance.length - 1]
-      console.log(attendanceLog);
-      this._change.detectChanges;
+    // this.fs.readFile(this.jsonFilePath, async (err, data) => {
+    //   const userLogDetails = JSON.parse(data);
+    //   console.log(userLogDetails);
+    //   let attendanceLog = userLogDetails.attendance[userLogDetails.attendance.length - 1]
+    //   console.log(attendanceLog);
 
-      if (attendanceLog && attendanceLog.timeLog.length && attendanceLog.timeLog[attendanceLog.timeLog.length - 1].out == '-') {
-        $("#start").addClass('disable');
-        this.running = false
-        this.start();
-        $("#stop").removeClass('disable');
-      }
-      else {
-        $("#stop").addClass('disable');
-        $("#start").removeClass('disable');
-      }
-    });
+
+    //   if (attendanceLog && attendanceLog.timeLog.length && attendanceLog.timeLog[attendanceLog.timeLog.length - 1].out == '-') {
+    //     $("#start").addClass('disable');
+    //     this.running = false
+    //     this.timeOutFlag = true;
+    //     await this.getLogs();
+    //     this.start();
+    //     this.syncData("resumeTime");
+
+    //     $("#stop").removeClass('disable');
+    //   }
+    //   else {
+    //     $("#stop").addClass('disable');
+    //     $("#start").removeClass('disable');
+    //   }
+    // });
   }
 
 
