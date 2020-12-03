@@ -667,7 +667,8 @@ export class HomeComponent implements OnInit {
     console.log(navigator.onLine);
     const object = {
       status,
-      user: this.userInfo._id
+      user: this.userInfo._id,
+      userName: this.userInfo.name
     }
     this._userService.changeStatus(object)
   }
