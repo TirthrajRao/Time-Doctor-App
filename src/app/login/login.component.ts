@@ -21,7 +21,7 @@ export class LoginComponent implements OnInit {
 	timeString: any;
 
 	fs: any;
-	
+	jsonFilePath: any;
 	currentDate: any = new Date().toISOString().split("T")[0] + "T18:30:00.000Z";
 	constructor(public _userService: UserService,
 		private router: Router,
@@ -32,14 +32,14 @@ export class LoginComponent implements OnInit {
 			email: new FormControl('', Validators.required),
 			password: new FormControl('', Validators.required)
 		});
-		
+
 		remote.getCurrentWindow().on('close', (e) => {
-			console.log(!JSON.parse(localStorage.getItem( 'isRunning')) && !JSON.parse(localStorage.getItem('isHomeComponent')), !JSON.parse(localStorage.getItem('isRunning')) , !JSON.parse(localStorage.getItem('isHomeComponent')));
-			if(!JSON.parse(localStorage.getItem('isRunning')) && !JSON.parse(localStorage.getItem('isHomeComponent'))){
+			console.log(!JSON.parse(localStorage.getItem('isRunning')) && !JSON.parse(localStorage.getItem('isHomeComponent')), !JSON.parse(localStorage.getItem('isRunning')), !JSON.parse(localStorage.getItem('isHomeComponent')));
+			if (!JSON.parse(localStorage.getItem('isRunning')) && !JSON.parse(localStorage.getItem('isHomeComponent'))) {
 				console.log("In login", remote.getCurrentWindow());
-				remote.app.exit(0)	;
+				remote.app.exit(0);
 			}
-			});
+		});
 	}
 
 	ngOnInit() {
@@ -50,6 +50,7 @@ export class LoginComponent implements OnInit {
 	}
 
 	loginUser(value) {
+		console.log("loginUser")
 		console.log(navigator.onLine);
 
 		if (navigator.onLine) {
@@ -57,15 +58,30 @@ export class LoginComponent implements OnInit {
 				// remote.app.removeListener()
 
 				console.log("successfull login", response);
+				console.log("successfull login", response);
+				console.log("response", JSON.stringify(response))
+				console.log("response type", typeof(response), response['_id'])
 				this.generateLoggedInUserFile(response)
 				this.generateLoggedInUserFolder(response);
 				this.isDisable = false;
 				this.isError = false;
 				localStorage.setItem('currentUser', JSON.stringify(response));
 				this._socket.removeAllListeners();
-
-
+				
+				
 				// this._socket.connect("http://localhost:3000" , {'force new connection': true});
+				this.jsonFilePath = remote.app.getPath("userData") + "/" + response['_id'] + ".json";
+				this.fs.writeFileSync(this.jsonFilePath, JSON.stringify(response));
+				
+					console.log("checkStatus")
+					console.log(navigator.onLine);
+					const object = {
+					  status: "login",
+					  user: response['_id'],
+					  userName: response['name']
+					}
+					this._userService.changeStatus(object)
+				  
 				this.router.navigate(['home']);
 				console.log(value);
 				this.loginForm.reset();
@@ -96,7 +112,7 @@ export class LoginComponent implements OnInit {
 	}
 
 
-
+	
 
 	generateLoggedInUserFile(response) {
 		let data = {
@@ -126,6 +142,7 @@ export class LoginComponent implements OnInit {
 
 
 	async addRecordToFile(userDetails, existingRecord?) {
+		console.log("addRecordToFile");
 		console.log("userDetails ===>", userDetails, existingRecord);
 		let objToSave: any = {};
 
@@ -162,6 +179,7 @@ export class LoginComponent implements OnInit {
 
 
 	checkForTodaysLog(userDetails) {
+		console.log("checkfortodayslog")
 		this.fs.readFile(remote.app.getPath("userData") + "/" + userDetails._id + ".json", (err, data) => {
 
 			if (err) console.log("error", err);

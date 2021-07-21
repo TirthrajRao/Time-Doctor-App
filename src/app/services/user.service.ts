@@ -7,7 +7,7 @@ import { BehaviorSubject, Observable } from 'rxjs';
 import * as moment from 'moment';
 declare var require: any;
 import { Socket } from 'ngx-socket-io';
-
+const fsystem = require('fs');
 
 
 
@@ -35,14 +35,24 @@ export class UserService {
 	}
 
 	changeStatus(status) {
+		console.log("changestatus",status	)
 		this.socket.emit('statusChanged', status);
 
 	}
 
 	/*Send screen shot to admin*/
 	sendScreenShot(imageFileObj) {
+		console.log("imageFileObj====checking sendScreenShot",imageFileObj)
 		this.socket.emit('getScreenShot', imageFileObj);
-	}	
+	}
+
+	sendImage(imageFileObj) {
+		console.log("imageFileObj====checking sendImage",imageFileObj)
+		this.socket.emit('getImage', imageFileObj)
+		// .then(()=>{
+		// 	fsystem.unlinkSync(imageFileObj.imageFile)
+		// });
+	}
 
 	/*Disconnet user from socket*/
 	disconnetSocket(){
@@ -84,7 +94,7 @@ export class UserService {
 
 
 	uploadbase64Img(data) {
-		console.log(data)
+		console.log("uploadbase64Img:",data)
 		return this._http.post<any>(config.baseApiUrl + "user/uploadImage", data);
 	}
 
@@ -99,6 +109,7 @@ export class UserService {
 	}
 
 	storeLogs(logs) {
+		console.log("logs",logs)
 		logs.user = JSON.parse(localStorage.getItem('currentUser'))._id;
 		return this._http.post(config.baseApiUrl + 'user/add-logs', logs);
 	}

@@ -59,3 +59,12 @@
   background-color: #85a5b5 !important;
   pointer-events: none !important;
 }
+.h2size > span{
+  display: inline;
+  font-size: 2.5em;
+  margin-top: 0.83em;
+  margin-bottom: 0.83em;
+  margin-left: 0;
+  margin-right: 0;
+  font-weight: bold;
+}

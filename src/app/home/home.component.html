@@ -10,7 +10,10 @@
 	<div class="container">
 		<h3 class="page_title">Welcome to Time-Doctor Application</h3>
 		<div class="time_control_box z-depth-2">
-			<h2>{{hours | numpad:2}}:{{minutes | numpad:2}}:{{seconds | numpad:2}}</h2>
+			<h2 ng-model="">{{hours | numpad:2}}:{{minutes | numpad:2}}:{{seconds | numpad:2}}</h2>
+			<!-- <div class="h2size">
+				<span ng-model="hours">{{hours | numpad:2}} : </span><span ng-model="minutes">{{minutes | numpad:2}}</span><span ng-model="seconds"> : {{seconds | numpad:2}}</span>
+			</div> -->
 			<div class="row">
 				<div class="col offset-s2 s4">
 					<a  class=" timer_button z-depth-2 button_primary waves-effect waves-light" (click)="start();checkStatus('online')" id="start">start</a>
