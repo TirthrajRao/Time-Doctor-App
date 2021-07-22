@@ -7,22 +7,11 @@ import { BehaviorSubject, Observable } from 'rxjs';
 import * as moment from 'moment';
 declare var require: any;
 import { Socket } from 'ngx-socket-io';
-const fsystem = require('fs');
 @Injectable({
 	providedIn: 'root'
 })
 export class UserService {
-
-	/*Get screen shot request form admin*/
-	// screenShotRequest = this.socket.fromEvent<string[]>('screenShotRequest');
-	
-	// screen = this.socket.on('screenShotRequest' , (data) => {
-	// 	console.log("Data on nce =======>", data);
-
-	// });
-
 	isLoggedIn: EventEmitter<any> = new EventEmitter<any>();
-	// documents = this.socket.fromEvent<any>('getStatus');
 
 	private currentUserSubject: BehaviorSubject<any>;
 	public currentUser: Observable<any>;
@@ -44,11 +33,7 @@ export class UserService {
 	}
 
 	sendImage(imageFileObj) {
-		// console.log("imageFileObj====checking sendImage",imageFileObj)
 		this.socket.emit('getImage', imageFileObj)
-		// .then(()=>{
-		// 	fsystem.unlinkSync(imageFileObj.imageFile)
-		// });
 	}
 
 	/*Disconnet user from socket*/
