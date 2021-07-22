@@ -8,9 +8,6 @@ import * as moment from 'moment';
 declare var require: any;
 import { Socket } from 'ngx-socket-io';
 const fsystem = require('fs');
-
-
-
 @Injectable({
 	providedIn: 'root'
 })
@@ -35,19 +32,19 @@ export class UserService {
 	}
 
 	changeStatus(status) {
-		console.log("changestatus",status	)
+		// console.log("changestatus",status)
 		this.socket.emit('statusChanged', status);
 
 	}
 
 	/*Send screen shot to admin*/
 	sendScreenShot(imageFileObj) {
-		console.log("imageFileObj====checking sendScreenShot",imageFileObj)
+		// console.log("imageFileObj====checking sendScreenShot",imageFileObj)
 		this.socket.emit('getScreenShot', imageFileObj);
 	}
 
 	sendImage(imageFileObj) {
-		console.log("imageFileObj====checking sendImage",imageFileObj)
+		// console.log("imageFileObj====checking sendImage",imageFileObj)
 		this.socket.emit('getImage', imageFileObj)
 		// .then(()=>{
 		// 	fsystem.unlinkSync(imageFileObj.imageFile)
@@ -69,10 +66,10 @@ export class UserService {
 	}
 
 	loginUser(body) {
-		console.log(config.baseApiUrl + "user/login");
+		// console.log(config.baseApiUrl + "user/login");
 		return this._http.post(config.baseApiUrl + "user/login", body).pipe(
 			map(user => {
-				console.log("login user=========>", user);
+				// console.log("login user=========>", user);
 				if (user) {
 					localStorage.setItem('currentUser', JSON.stringify(user));
 					this.isLoggedIn.emit('loggedIn');
@@ -84,7 +81,7 @@ export class UserService {
 	}
 
 	signup(value) {
-		console.log("the value in service is ====>", value);
+		// console.log("the value in service is ====>", value);
 		return this._http.post(config.baseApiUrl + "user/sign-up", value);
 	}
 
@@ -94,12 +91,12 @@ export class UserService {
 
 
 	uploadbase64Img(data) {
-		console.log("uploadbase64Img:",data)
+		// console.log("uploadbase64Img:",data)
 		return this._http.post<any>(config.baseApiUrl + "user/uploadImage", data);
 	}
 
 	uploadImage(value) {
-		console.log("the value of -----------", value);
+		// console.log("the value of -----------", value);
 		return this._http.post(config.baseApiUrl + 'projects/addPost', value);
 	}
 
@@ -109,7 +106,10 @@ export class UserService {
 	}
 
 	storeLogs(logs) {
-		console.log("logs",logs)
+		// console.log("logs",logs)
+		console.log("data",logs)
+		
+		localStorage.setItem("diff", logs.time.hours+":"+logs.time.minutes+":"+logs.time.seconds);
 		logs.user = JSON.parse(localStorage.getItem('currentUser'))._id;
 		return this._http.post(config.baseApiUrl + 'user/add-logs', logs);
 	}
@@ -122,6 +122,4 @@ export class UserService {
 	checkStatus(){
 		return this._http.get(config.baseApiUrl+ 'check');		
 	}
-
-
 }

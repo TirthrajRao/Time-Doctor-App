@@ -1,4 +1,59 @@
-import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
+const fsystem = require('fs');
+
+appendFilesToJson(userLogDetails) {
+    console.log("inside appendfiles to json+++++++")
+    const formData = new FormData();
+    // formData.append('userLogDetails',JSON.stringify(userLogDetails));            
+    this.userLogDetails = JSON.parse(localStorage.getItem("currentUser"));
+    _.forEach(userLogDetails.attendance[userLogDetails.attendance.length - 1], (singleAttendance, logIndex) => {
+      console.log("singleAttendance++++",singleAttendance);
+      // _.forEach(singleAttendance.images, async (singleImage, imageIndex) => {
+        const files = fsystem.readdirSync(this.imageFilesPath)
+    console.log("console file names inside users offline directory");
+
+    for (const file of files) {
+      console.log("file name", file)
+        // console.log("singleImage+++++",singleImage);
+        console.log("image file path ", this.imageFilesPath)
+        console.log("singleImage",file)
+        const contents = this.fs.readFileSync(this.imageFilesPath + file, { encoding: 'base64' });
+        console.log("contents+++++++",contents)
+
+        const imageBlob: Blob = this.b64toBlob(contents, "image/png");
+        console.log("imageblob:--",imageBlob);
+
+        let imageName = file
+        imageName = imageName[imageName.length - 1];
+        console.log("image name",imageName)
+        const imageFile: File = new File([imageBlob], imageName, {
+          type: "image/png"
+        });
+        // console.log(userLogDetails.attendance[logIndex].images);
+        formData.append('uploads', imageFile, imageName);
+        // singleImage.path = userLogDetails._id + '/' + imageName;
+        // userLogDetails.attendance[logIndex].images[imageIndex]["file"] = imageFile;
+      }
+      // }
+      
+    });
+    console.log("userLogDetails++++++++",userLogDetails)
+    formData.append('userLogDetails', JSON.stringify(userLogDetails));
+    console.log("formData:++++++",formData)
+
+    return formData;
+  }
+
+  const files = fsystem.readdirSync(this.jsonFilePath)
+    console.log("console file names inside users offline directory");
+
+    for (const file of files) {
+      console.log("file name", file)
+    }
+
+
+
+
+    import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { UserService } from '../services/user.service';
 import { FormGroup, FormBuilder, FormControl, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -33,7 +88,7 @@ export class HomeComponent implements OnInit {
   timeString: any;
 
   base64: any;
-  diff : any;
+
   time:any;
   timeout: any;
   seconds = 0;
@@ -72,23 +127,17 @@ export class HomeComponent implements OnInit {
     private _change: ChangeDetectorRef) {
     this.fs = (window as any).fs;
     localStorage.setItem("isHomeComponent", "true");
-    
     interval(10000).subscribe(x => {
       const files = fsystem.readdirSync(this.imageFilesPath)
       if(navigator.onLine && files.length){
           for (const file of files) {
             (async()=>{
               var imagePath = this.imageFilesPath + "/"+ file;
-              console.log("image path", imagePath)
               const contents = this.fs.readFileSync(imagePath, { encoding: 'base64' });
-              console.log("contents+++++++",contents)
-              
               const imageBlob: Blob = await this.b64toBlob(contents, "image/png");
-              console.log(imageBlob);
   
               let imageName = file;
               // imageName = imageName[imageName.length - 1];
-              console.log(imageName)
               const imageFile: File = new File([imageBlob], imageName, {
                 type: "image/png"
               });
@@ -190,24 +239,22 @@ export class HomeComponent implements OnInit {
           time: res.logs.time
         };
         console.log("get logs",logs);
-        await this.fs.readFile(this.jsonFilePath, async (err, data) => {
+        // this.fs.readFile(this.jsonFilePath, async (err, data) => {
 
-          console.log("get local currentuser log difference", JSON.parse(data))
-          let time = JSON.parse(data).attendance[JSON.parse(data).attendance.length-1].difference;
-          console.log("time",time)
-          this.diff = time;
-          localStorage.setItem("diff",time)
-          console.log("diff1",this.diff)
-          console.log("hours", (time.split(":")[0] == "-") ? 0 : time.split(":")[0])
-          this.hours = (time.split(":")[0] == "-") ? 0 : time.split(":")[0];
-          console.log("minutes", (time.split(":")[0] == "-") ? 0 : time.split(":")[1])
-          this.minutes = (time.split(":")[0] == "-") ? 0 : time.split(":")[1];
-          console.log("seconds", (time.split(":")[0] == "-") ? 0 : time.split(":")[2])
-          this.seconds = (time.split(":")[0] == "-") ? 0 : time.split(":")[2];
-        });
-        console.log("diff2",this.diff)
+        //   console.log("get local currentuser log difference", JSON.parse(data))
+        //   let time = JSON.parse(data).attendance[0].difference;
+        //   console.log("time",time)
+        //   console.log("hours", time.split(":")[0])
+        //   this.hours = time.split(":")[0];
+        
+        //   console.log("minutes", time.split(":")[1])
+        //   this.minutes = time.split(":")[1];
+        //   console.log("seconds", time.split(":")[2])
+        //   this.seconds = time.split(":")[2];
+        // });
+
         await localStorage.setItem('logs', JSON.stringify(logs));
-        await localStorage.setItem('startLogs', JSON.stringify(logs));
+        await localStorage.setItem('tempFetch', JSON.stringify(logs));
         this.hours = JSON.parse(localStorage.getItem('logs')).time.hours;
         this.minutes = JSON.parse(localStorage.getItem('logs')).time.minutes;
         this.seconds = JSON.parse(localStorage.getItem('logs')).time.seconds;
@@ -520,13 +567,11 @@ export class HomeComponent implements OnInit {
             
             await localStorage.setItem('logs', JSON.stringify(logs));
             console.log("at the time of stop", logs);
-            await this._userService.storeLogs(logs).subscribe(res => console.log(res), err => console.log(err));
-            await this.getLogs();
+            this._userService.storeLogs(logs).subscribe(res => console.log(res), err => console.log(err));
             }
           }
       });
     }, 2000);
-    
     await clearInterval(this.intervalId);
   }
 
@@ -696,23 +741,16 @@ export class HomeComponent implements OnInit {
     var out = currentAttendanceLog.timeLog[currentAttendanceLog.timeLog.length - 1].out;
     var inn = moment(in1, 'hh:mm:ss: a').diff(moment().startOf('day'), 'seconds');
     var outt = moment(out, 'hh:mm:ss: a').diff(moment().startOf('day'), 'seconds');
-    console.log("in1",in1,"out",out,"inn",inn,"outt",out)
+
     let seconds = outt - inn;
-    console.log("seconds",seconds);
-    // console.log("startlogs", JSON.parse(localStorage.getItem("startLogs")).time.seconds)
-    console.log("this.diff before if",this.diff)
-    console.log("diff local storage",localStorage.getItem("diff"))
-    if (localStorage.getItem("diff") && localStorage.getItem("diff") != "-") {
-      console.log("this.diff inside if",this.diff)
-      console.log("inside if calculate difference")
+    if (currentAttendanceLog.difference != "-") {
       var difference = moment(currentAttendanceLog.difference, 'hh:mm:ss: a').diff(moment().startOf('day'), 'seconds');
-      console.log("difference",difference)
+
       seconds = seconds + difference;
       console.log("seconds++++++",seconds)
     }
-    
+
     seconds = Number(seconds);
-    console.log("outer seconds",seconds)
     var h = Math.floor(seconds / 3600);
     var m = Math.floor(seconds % 3600 / 60);
     var s = Math.floor(seconds % 3600 % 60);
@@ -980,5 +1018,685 @@ export class HomeComponent implements OnInit {
   //   });
   // }
 }
+
+const userDao = {}
+const userModel = require('../models/user.model');
+const userStatusModel = require('../models/userStatus.model');
+
+const _ = require('lodash');
+const path = require('path');
+const mkdir = require('mkdirp');
+const dir = require('node-dir');
+const fs = require('fs');
+const async = require('async')
+const ObjectId = require('mongodb').ObjectId;
+var moment = require('moment');
+const { resolve } = require('path');
+const { param } = require('../routes/user');
+const { remove } = require('lodash');
+const groupDao = require('./group.dao');
+
+
+var isVersionUpdated = false;
+var oldVersionId = null;
+
+
+const checkVersionId = (body) => {
+	console.log("Inside checkVersionId");
+	console.log("Body of checkVersionId() ==>", body);
+
+	return new Promise((resolve, reject) => {
+		console.log("body.versionId ==>", body.versionId);
+		console.log("If body.versionId == null");
+
+		_.forEach(body.attendance, (singleAttendance, logIndex) => {
+			console.log(singleAttendance);
+			_.forEach(singleAttendance.images, (singleImage, imageIndex) => {
+				console.log(singleImage);
+				let imageName = singleImage.path.split("/")
+				imageName = imageName[imageName.length - 1];
+				singleImage.path = body._id + '/' + imageName;
+			});
+		});
+
+
+		saveRecord(body)
+			.then((recordAdded) => {
+
+				resolve(recordAdded);
+
+			}, (recordFailed) => {
+
+				reject(recordFailed);
+
+			})
+	});
+}
+console.log("inside check version id+++++++++")
+
+
+const saveRecord = (body) => {
+	return new Promise((resolve, reject) => {
+		oldVersionId = body.versionId;
+		isVersionUpdated = false;
+
+		console.log("Inside save record",body.attendance);
+
+		async.eachOfSeries(body.attendance, (singleLog, index, callback) => {
+			const findRecordParams = { singleLog, index, id: body._id }
+			console.log("body", JSON.stringify(body))
+			console.log("singlielog",JSON.stringify(singleLog))
+			console.log("find record params",findRecordParams)
+			findRecord(findRecordParams)
+				.then((dbRecord) => {
+					console.log("Resovled ========>dbRecord Index", dbRecord, index);
+					console.log("index",index)
+					body.attendance[index] = dbRecord;
+
+					/*Check if record exists in db or not*/
+					if (!dbRecord) {
+						console.log("inside if")
+						addNewRecord({ id: body._id, singleLog, version: body.versionId })
+							.then((newRecordAdded) => {
+								return callback();
+							})
+							.catch((newRecordFailed) => {
+								return callback(newRecordFailed);
+							});
+					}
+					else {
+						console.log("inside else")
+						console.log("index",index)
+						console.log("attendance",body.attendance[index])
+						updateDatabaseRecord({ id: body._id, singleLog: body.attendance[index], version: body.versionId })
+							.then((databaseUpdated) => {
+								return callback();
+							})
+							.catch((databaseFailed) => {
+								return callback(databaseFailed);
+							});
+					}
+
+
+				})
+				.catch((rejected) => {
+					return callback(rejected);
+				});
+		}, (error1) => {
+			if (error1) {
+				console.log(error1)
+				return reject(error1)
+			}
+			else {
+				console.log("body ================> ", body, oldVersionId);
+				resolve({ versionId: oldVersionId });
+
+
+
+
+			}
+		})
+	})
+}
+
+
+const uploadImages = (obj, jsonObject) => {
+	console.log("inside user.dao uploadImages")
+	console.log("obj", JSON.stringify(obj));
+	return new Promise((resolve, reject) => {
+		const uploadPath = path.join(__dirname, "../uploads/" + obj.id + "/");
+		console.log(uploadPath);
+
+		obj.file('uploads').upload({
+			maxBytes: 50000000000000,
+			dirname: uploadPath,
+			saveAs: function (__newFileStream, next) {
+				console.log(" __newFileStream.filename", __newFileStream.filename)
+				dir.files(uploadPath, function (err, files) {
+					if (err) {
+						console.log(err)
+						mkdir(uploadPath, 0775);
+						return next(undefined, __newFileStream.filename);
+					} else {
+						return next(undefined, __newFileStream.filename);
+					}
+				});
+			}
+		}, function (err, files) {
+			if (err) {
+				console.log(err);
+				reject(err)
+			} else {
+				console.log(files);
+
+				let universalIndex = 0;
+				resolve(files)
+			}
+		})
+	});
+}
+
+
+
+function findRecord(findRecordParams) {
+	console.log("findRecord=====>", findRecordParams)
+	return new Promise((resolve, reject) => {
+		const query = { _id: findRecordParams.id, 'attendance.date': new Date(findRecordParams.singleLog.date) }
+		console.log("qeruy ====>", query);
+		console.log("qeruy ====>", typeof new Date(findRecordParams.singleLog.date));
+
+
+
+		userModel.find(
+			{
+				_id: findRecordParams.id
+
+			},
+			{
+				attendance: {
+					$elemMatch: {
+						date: new Date(findRecordParams.singleLog.date)
+					}
+				}
+			}
+		)
+			.exec((err, foundLog) => {
+				if (err) {
+					console.log("error in finding log ===>", err);
+					reject(err);
+				}
+				else {
+					console.log("foundLog ===>", foundLog);
+					if (foundLog[0].attendance && foundLog[0].attendance.length != 0) {
+						const objParams = {
+							existingLog: foundLog[0].attendance[0],
+							logForUpdation: findRecordParams.singleLog
+						}
+
+						updateExistingRecord(objParams)
+							.then((recordUpdated) => {
+								resolve(recordUpdated);
+							})
+							.catch((recordFailed) => {
+								reject(recordFailed)
+							});
+					}
+					else {
+						console.log("In else ====>");
+						resolve();
+					}
+
+
+
+
+
+				}
+			})
+
+
+
+
+	});
+}
+
+
+function updateExistingRecord(findRecordParams) {
+	return new Promise((resolve, reject) => {
+		try {
+
+			/*Add the difference*/
+
+			console.log("findRecordParams in updateExistingRecord ===>", findRecordParams);
+			var existingDifference = moment(findRecordParams.existingLog.difference, 'hh:mm:ss: a').diff(moment().startOf('day'), 'seconds');
+			var logForUpdationDifference = moment(findRecordParams.logForUpdation.difference, 'hh:mm:ss: a').diff(moment().startOf('day'), 'seconds');
+			console.log("existingDifference",existingDifference)
+			console.log("logForUpdateDifference",logForUpdationDifference)
+			// let newDifference = existingDifference + logForUpdationDifference;
+			let newDifference = logForUpdationDifference;
+			console.log("newDifference",newDifference);
+
+
+			newDifference = Number(newDifference);
+			var h = Math.floor(newDifference / 3600);
+			var m = Math.floor(newDifference % 3600 / 60);
+			var s = Math.floor(newDifference % 3600 % 60);
+
+			var time = ('0' + h).slice(-2) + ":" + ('0' + m).slice(-2) + ":" + ('0' + s).slice(-2);
+			console.log("NEw Diffrence ===>", newDifference, time);
+			findRecordParams.existingLog.difference = time;
+			console.log("time==>",time)
+			/*Add logs to timeLog Array*/
+			
+			_.forEach(findRecordParams.logForUpdation.timeLog, (singleTimeLog, index) => {
+				console.log("singleTimeLog",singleTimeLog, index)
+				console.log("find1",findRecordParams.logForUpdation.timeLog)
+				console.log("exisiting record",findRecordParams.existingLog.timeLog)
+				if(findRecordParams.existingLog.timeLog && findRecordParams.existingLog.timeLog[index] && findRecordParams.existingLog.timeLog[index].in){
+					console.log(findRecordParams.existingLog.timeLog[index].in)
+					console.log("if")
+					findRecordParams.existingLog.timeLog[index] = singleTimeLog;
+				}
+				else{
+					console.log("else")
+					findRecordParams.existingLog.timeLog.push(singleTimeLog);
+				}
+				
+				
+				// findRecordParams.existingLog.timeLog.push(singleTimeLog);
+			});
+
+			/*Add logs to Images to exisiting Images Array*/
+			_.forEach(findRecordParams.logForUpdation.images, (singleImage, index) => {
+				findRecordParams.existingLog.images.push(singleImage);
+			});
+
+			/*Update inActivity time*/
+			if (findRecordParams.logForUpdation && findRecordParams.logForUpdation.inActivityTime) {
+				findRecordParams.existingLog.inActivityTime = findRecordParams.logForUpdation.inActivityTime;
+			}
+
+			resolve(findRecordParams.existingLog);
+		}
+		catch (err) {
+			console.log(err)
+			reject(err);
+		}
+	});
+}
+
+
+
+function updateDatabaseRecord(objParams) {
+	return new Promise((resolve, reject) => {
+		console.log("inside update database record")
+		console.log("objparms",JSON.stringify(objParams));
+		try {
+			let id = objParams.id;
+			let singleLog = objParams.singleLog
+			let version = objParams.version
+
+			let versionId = null;
+			if (!isVersionUpdated) {
+				versionId = !version ? 1 : version + 1;
+				isVersionUpdated = true;
+				oldVersionId = versionId;
+			}
+			else {
+				versionId = oldVersionId;
+			}
+
+			const query = { _id: id, 'attendance.date': new Date(singleLog.date) }
+			console.log("query ==>", query)
+			console.log("singlelog.timelog",singleLog.timeLog)
+			let updateValue = {};
+			updateValue["attendance.$.difference"] = singleLog.difference
+			updateValue["attendance.$.inActivityTime"] = singleLog.inActivityTime
+			updateValue["attendance.$.timeLog"] = singleLog.timeLog
+			updateValue["attendance.$.images"] = singleLog.images
+			updateValue["versionId"] = versionId;
+
+			console.log("updateValue =====>", updateValue, version);
+			userModel
+				.updateOne(query,
+					{ $set: updateValue })
+				.exec((error, updatedRecord) => {
+					console.log("updateDb ==>", updatedRecord)
+
+					if (error) {
+						console.log("error in updateDb ==>", error)
+						reject(error)
+					}
+					else if (updatedRecord && updatedRecord.n) {
+						return resolve(true)
+
+					}
+					else {
+						return resolve(false)
+					}
+				})
+
+		}
+		catch (err) {
+			console.log("err -=====<>", err);
+			reject(err);
+		}
+
+	});
+
+
+}
+
+
+
+function addNewRecord(params) {
+	return new Promise((resolve, reject) => {
+		const id = params.id;
+		const logToAdd = params.singleLog;
+		const version = params.version;
+
+		let versionId = null;
+		if (!isVersionUpdated) {
+			versionId = !version ? 1 : version + 1;
+			isVersionUpdated = true;
+			oldVersionId = versionId;
+		}
+		else {
+			versionId = oldVersionId;
+		}
+
+		// console.log("updateValue addNew Record=====>", updateValue);
+
+		userModel.update(
+			{
+				_id: id
+			},
+			{
+				$addToSet: {
+					attendance: logToAdd
+				},
+				$set: {
+					versionId: versionId
+				}
+			},
+			{
+				upsert: true,
+				new: true
+			}
+		)
+			.exec((err, recordUpdated) => {
+				if (err) {
+					console.log(err);
+					reject(err)
+				}
+				else {
+					// console.log(recordUpdated);
+					resolve({ versionId });
+				}
+			});
+
+
+	});
+}
+
+
+
+
+const getAllUsers = () => {
+	return new Promise((resolve, reject) => {
+
+		userModel.find({ userRole: { $ne: 'admin' } })
+			.lean()
+			.exec((err, allUsers) => {
+				if (err) reject(err)
+				else resolve(allUsers);
+			});
+
+	});
+}
+
+
+
+
+const updateRecord = function (params) {
+	return new Promise((resolve, reject) => {
+		userModel.updateOne({ _id: params.member }, params.query, { upsert: true, new: true })
+			.exec((err, userRecordUpdated) => {
+				if (err) {
+					console.log(err)
+					reject(err)
+
+				}
+				else {
+					console.log("userRecordUpdated ===>", userRecordUpdated);
+					if (!params.isRepeat) {
+						checkForTeamLead({ member: params.member })
+							.then((userRoleUpdated) => {
+								resolve(userRoleUpdated);
+							})
+							.catch((userRoleUpdateErr) => {
+								reject(userRoleUpdateErr);
+							});
+
+					}
+					else {
+						resolve(userRecordUpdated);
+
+					}
+				}
+			});
+
+	});
+}
+
+
+const checkUserStatus = (params) => {
+	return new Promise((resolve, reject) => {
+		userStatusModel.findOne({ user: params.user })
+			.populate('user')
+			.exec((err, foundStatus) => {
+				if (err) {
+					reject(err);
+				}
+				else {
+					resolve(foundStatus);
+				}
+			});
+	});
+}
+
+
+function checkForTeamLead(params) {
+	return new Promise((resolve, reject) => {
+		userModel.find({ _id: params.member })
+			.lean()
+			.exec((err, foundUser) => {
+				if (err) {
+					reject(err);
+				}
+				else {
+					console.log("foundUser =====>", foundUser);
+
+					let objToSend = {
+						query: {
+							$set: {
+								userRole: "developer"
+							}
+						},
+						member: params.member,
+						isRepeat: true
+					}
+
+					if (foundUser[0].teamLead.length == 0) {
+
+						objToSend["query"]["$set"]["userRole"] = "developer"
+
+						updateRecord(objToSend)
+							.then((userRoleUpdated) => {
+								resolve(userRoleUpdated)
+							})
+							.catch((userRoleUpdateErr) => {
+								reject(userRoleUpdateErr);
+							});
+
+					}
+					else {
+						objToSend["query"]["$set"]["userRole"] = "team-lead"
+
+						updateRecord(objToSend)
+							.then((userRoleUpdated) => {
+								resolve(userRoleUpdated)
+							})
+							.catch((userRoleUpdateErr) => {
+								reject(userRoleUpdateErr);
+							});
+					}
+				}
+			});
+	});
+}
+
+
+
+const checkForExistsFreeMember = (params) => {
+	return new Promise((resolve, reject) => {
+		var allUsers = _.concat(params.body.removedTeam, params.body.members);
+		// var allUsers = [];
+		// if(params.body.removedTeam){
+		// }
+		// else {
+		// 	var allUsers = params.body.members;
+		// }
+
+
+		console.log("checkForExistsFreeMember", allUsers, params);
+
+		async.eachSeries(allUsers, (singleUser, callback) => {
+
+			console.log("singleUer in async series", singleUser);
+			// Get single User details: 
+			let parmas = {
+				user: singleUser
+			}
+			getSingleUser(singleUser)
+				.then((userDetails) => {
+
+					console.log("FOund suers ===>", userDetails);
+					//check that did free resourse grp id exists or not in user.
+					let objToSend = {
+						userDetails,
+						removedTeam: params.body.removedTeam,
+						members: params.body.members,
+						freeGrp: params.freeGrp
+					}
+
+					checkUpdateFreeResourceGrp(objToSend)
+						.then((updated) => {
+							console.log("callback valled");
+							callback();
+						})
+						.catch((err) => {
+							console.log(err);
+							callback(err);
+						})
+
+				})
+				.catch((userDetErr) => {
+					console.log(userDetErr);
+					// callback error
+					callback(userDetErr);
+				});
+		}, (err) => {
+			if (err) {
+				// callback error 
+				console.log(err);
+				reject(err);
+			}
+			else {
+				// Success
+				console.log("in finall resolve");
+				resolve();
+
+			}
+		});
+	});
+}
+
+const getSingleUser = (params) => {
+	return new Promise((resolve, reject) => {
+		// console.log("Updated params ==========>	", params);
+		userModel.findOne({ _id: params })
+			.lean()
+			.exec((err, foundDetails) => {
+				if (err) {
+					reject(err);
+				}
+				else {
+					resolve(foundDetails);
+				}
+			});
+
+	});
+}
+
+
+function checkUpdateFreeResourceGrp(params) {
+	return new Promise((resolve, reject) => {
+		try {
+			console.log("PARMAS IN UPDAETE FREE RESOURCE", params, params.freeGrp.members);
+			let index = _.findIndex(params.freeGrp.members,  (o) => { return params.userDetails._id != null ?  o.toString() == params.userDetails._id.toString() : false });
+
+			if (index != -1) {
+				let ind = _.findIndex(params.removedTeam,  (o)  => { return params.userDetails._id != null ?  o.toString() == params.userDetails._id.toString() : false });
+				if (ind != -1) {
+					console.log("Found in removed team @ index ::", ind);
+					resolve();
+				}
+				else {
+					console.log("Found in add team @ index ::", ind);
+
+					// Remove member from free resource group.
+
+					let objToSend = {
+						removedTeam: [params.userDetails._id],
+						groupId: params.freeGrp._id
+					}
+
+					groupDao.updateGroup(objToSend)
+						.then((groupUpdated) => {
+							resolve();
+							// console.log(groupUpdated);
+						})
+						.catch((groupUpdateErr) => {
+							console.log("groupUpdateErr ==>", groupUpdateErr);
+							reject(groupUpdateErr)
+						});
+
+				}
+			}
+			else {
+
+				// If user's group length is 0 and user's id is in removed group arrray. Then add that user in free resource group.
+				// console.	log(params.userDetails.group.length == 0, params.removedTeam.includes(params.userDetails._id.toString()));
+				if (params.userDetails.group.length == 0 && params.removedTeam.includes(params.userDetails._id.toString())) {
+
+					let objToSend = {
+						members: [params.userDetails._id],
+						groupId: params.freeGrp._id
+					}
+
+					groupDao.updateGroup(objToSend)
+						.then((groupUpdated) => {
+							resolve();
+							// console.log(groupUpdated);
+						})
+						.catch((groupUpdateErr) => {
+							console.log("groupUpdateErr ==>", groupUpdateErr);
+							reject(groupUpdateErr);
+						});
+
+				}
+				else {
+					console.log("in else if false false");
+					resolve();
+				}
+			}
+		}
+		catch (err) {
+			console.log(err);
+		}
+	});
+}
+
+
+
+
+exports.updateRecord = updateRecord
+exports.checkVersionId = checkVersionId
+exports.saveRecord = saveRecord
+exports.uploadImages = uploadImages
+exports.getAllUsers = getAllUsers
+exports.checkUserStatus = checkUserStatus
+exports.checkForExistsFreeMember = checkForExistsFreeMember
+exports.getSingleUser = getSingleUser
 
 

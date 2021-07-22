@@ -7,7 +7,6 @@ import * as moment from 'moment';
 import { Socket, SocketIoConfig } from 'ngx-socket-io';
 import Swal from 'sweetalert2'
 
-
 @Component({
 	selector: 'app-login',
 	templateUrl: './login.component.html',
@@ -34,9 +33,9 @@ export class LoginComponent implements OnInit {
 		});
 
 		remote.getCurrentWindow().on('close', (e) => {
-			console.log(!JSON.parse(localStorage.getItem('isRunning')) && !JSON.parse(localStorage.getItem('isHomeComponent')), !JSON.parse(localStorage.getItem('isRunning')), !JSON.parse(localStorage.getItem('isHomeComponent')));
+			// console.log(!JSON.parse(localStorage.getItem('isRunning')) && !JSON.parse(localStorage.getItem('isHomeComponent')), !JSON.parse(localStorage.getItem('isRunning')), !JSON.parse(localStorage.getItem('isHomeComponent')));
 			if (!JSON.parse(localStorage.getItem('isRunning')) && !JSON.parse(localStorage.getItem('isHomeComponent'))) {
-				console.log("In login", remote.getCurrentWindow());
+				// console.log("In login", remote.getCurrentWindow());
 				remote.app.exit(0);
 			}
 		});
@@ -44,23 +43,23 @@ export class LoginComponent implements OnInit {
 
 	ngOnInit() {
 		localStorage.setItem("isHomeComponent", "false");
-		console.log("user path ===>", remote.app.getPath("userData"));
-		console.log("app path ===>", remote.app.getPath("appData"));
-		console.log("remote", remote.powerMonitor.getSystemIdleTime())
+		// console.log("user path ===>", remote.app.getPath("userData"));
+		// console.log("app path ===>", remote.app.getPath("appData"));
+		// console.log("remote", remote.powerMonitor.getSystemIdleTime())
 	}
 
 	loginUser(value) {
-		console.log("loginUser")
-		console.log(navigator.onLine);
+		// console.log("loginUser")
+		// console.log(navigator.onLine);
 
 		if (navigator.onLine) {
 			this._userService.loginUser(value).subscribe((response) => {
 				// remote.app.removeListener()
 
-				console.log("successfull login", response);
-				console.log("successfull login", response);
-				console.log("response", JSON.stringify(response))
-				console.log("response type", typeof(response), response['_id'])
+				// console.log("successfull login", response);
+				// console.log("successfull login", response);
+				// console.log("response", JSON.stringify(response))
+				// console.log("response type", typeof(response), response['_id'])
 				this.generateLoggedInUserFile(response)
 				this.generateLoggedInUserFolder(response);
 				this.isDisable = false;
@@ -73,8 +72,8 @@ export class LoginComponent implements OnInit {
 				this.jsonFilePath = remote.app.getPath("userData") + "/" + response['_id'] + ".json";
 				this.fs.writeFileSync(this.jsonFilePath, JSON.stringify(response));
 				
-					console.log("checkStatus")
-					console.log(navigator.onLine);
+					// console.log("checkStatus")
+					// console.log(navigator.onLine);
 					const object = {
 					  status: "login",
 					  user: response['_id'],
@@ -83,15 +82,15 @@ export class LoginComponent implements OnInit {
 					this._userService.changeStatus(object)
 				  
 				this.router.navigate(['home']);
-				console.log(value);
+				// console.log(value);
 				this.loginForm.reset();
 			}, (err) => {
-				console.log(err);
+				// console.log(err);
 				if (err.status == 400 || err.status == 401) {
 					this.errorMessage = "Please Check your Email/Password";
 				}
 				this.isError = true;
-				console.log("err in login ", err);
+				// console.log("err in login ", err);
 			})
 		}
 		else {
@@ -100,12 +99,12 @@ export class LoginComponent implements OnInit {
 				'Please check your internet connection?',
 				'question'
 			)
-			console.log("Please check internet");
+			// console.log("Please check internet");
 		}
 	}
 
 	generateLoggedInUserFolder(response) {
-		console.log("this.fs.existsSync(remote.app.getPath._id ==", this.fs.existsSync(remote.app.getPath("userData") + "/" + response._id));
+		// console.log("this.fs.existsSync(remote.app.getPath._id ==", this.fs.existsSync(remote.app.getPath("userData") + "/" + response._id));
 		if (!this.fs.existsSync(remote.app.getPath("userData") + "/" + response._id)) {
 			this.fs.mkdirSync(remote.app.getPath("userData") + "/" + response._id);
 		}
