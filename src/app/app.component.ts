@@ -9,7 +9,7 @@ import { remote } from 'electron';
   styleUrls: ['./app.component.css']
 })
 export class AppComponent implements OnInit {
-  title = 'Time-doctor';
+  title = 'Rao Doctor';
   intervalId: any;
   userInfo = JSON.parse(localStorage.getItem('currentUser'));
 

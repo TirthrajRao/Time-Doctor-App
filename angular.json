@@ -3,7 +3,7 @@
   "version": 1,
   "newProjectRoot": "projects",
   "projects": {
-    "time-doctor": {
+    "rao-doctor": {
       "root": "",
       "sourceRoot": "src",
       "projectType": "application",
@@ -94,24 +94,24 @@
         "serve": {
           "builder": "@angular-builders/custom-webpack:dev-server",
           "options": {
-            "browserTarget": "time-doctor:build"
+            "browserTarget": "rao-doctor:build"
           },
           "configurations": {
             "dev": {
-              "browserTarget": "time-doctor:build:dev"
+              "browserTarget": "rao-doctor:build:dev"
             },
             "web": {
-              "browserTarget": "time-doctor:build:web"
+              "browserTarget": "rao-doctor:build:web"
             },
             "production": {
-              "browserTarget": "time-doctor:build:production"
+              "browserTarget": "rao-doctor:build:production"
             }
           }
         },
         "extract-i18n": {
           "builder": "@angular-devkit/build-angular:extract-i18n",
           "options": {
-            "browserTarget": "time-doctor:build"
+            "browserTarget": "rao-doctor:build"
           }
         },
         "test": {
@@ -154,7 +154,7 @@
         }
       }
     },
-    "time-doctor-e2e": {
+    "rao-doctor-e2e": {
       "root": "e2e",
       "projectType": "application",
       "architect": {
@@ -173,7 +173,7 @@
       }
     }
   },
-  "defaultProject": "time-doctor",
+  "defaultProject": "rao-doctor",
   "schematics": {
     "@schematics/angular:component": {
       "prefix": "app",

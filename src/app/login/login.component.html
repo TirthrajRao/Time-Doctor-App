@@ -48,7 +48,7 @@
                       <label for="icon_password">Password</label>
                   </div>
                   <div class="col s12 login_button_div">
-                      <button type="button" (click)="loginUser(loginForm.value)" [disabled]= "isDisable || loginForm.invalid" class="button_primary waves-effect waves-light">Login</button>
+                      <button type="submit" (click)="loginUser(loginForm.value)" [disabled]= "isDisable || loginForm.invalid" class="button_primary waves-effect waves-light">Login</button>
                       <p *ngIf="isError"  class="error_text"><span class="h6 font-weight-bold text-danger text-center">{{errorMessage}}</span></p>
                   </div>
               </div>

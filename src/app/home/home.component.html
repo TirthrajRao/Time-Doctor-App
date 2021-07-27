@@ -1,14 +1,14 @@
 <header>
 	<div class="header_content">
 		<a class="logo_box">
-			<img src="assets/logo.png" alt="logo image">
+			<img src="assets/images/favicon.png" alt="logo image">
 		</a>
 		<a (click)="logout()" class="logout_button z-depth-2 button_secondary waves-effect waves-light">Logout</a>
 	</div>
 </header>
 <section class="welcome_section">
 	<div class="container">
-		<h3 class="page_title">Welcome to Time-Doctor Application</h3>
+		<h3 class="page_title">Welcome to Rao-Doctor Application</h3>
 		<div class="time_control_box z-depth-2">
 			<h2 ng-model="">{{hours | numpad:2}}:{{minutes | numpad:2}}:{{seconds | numpad:2}}</h2>
 			<!-- <div class="h2size">
@@ -40,5 +40,23 @@
 	<div class="row justify-content-center">
 	</div>
 	<div class="row justify-content-around">
+	</div>
+</div>
+<div *ngIf="loading">
+	<div id="loading-wrapper">
+		<div class="absCenter">
+			<h6>Please Wait...</h6>
+			<div class="loader">
+			</div>
+		</div>
+	</div>
+</div>
+<div *ngIf="!diff">
+	<div id="loading-wrapper">
+		<div class="absCenter">
+			<h6>Please Wait...</h6>
+			<div class="loader">
+			</div>
+		</div>
 	</div>
 </div>
