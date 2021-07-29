@@ -131,8 +131,8 @@ export class LoginComponent implements OnInit {
 				console.log("Trying to write to file");
 				console.log("\nReading the file contents");
 
-
-				this.addRecordToFile(response);
+				// this.addRecordToFile(response);
+				this.checkForTodaysLog(response);
 
 				// this.fs.writeFileSync(remote.app.getPath("userData")+"/"+response._id+".json",JSON.stringify(data));
 			});

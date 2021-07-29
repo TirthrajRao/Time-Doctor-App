@@ -70,6 +70,10 @@ export class UserService {
 		return this._http.post(config.baseApiUrl + "user/sign-up", value);
 	}
 
+	getUserLog(value){
+		return this._http.post(config.baseApiUrl + "user/admin/userLogs",value);
+	}
+
 	uploadImg(formData) {
 		return this._http.post<any>(config.baseApiUrl + 'uploadfile', formData);
 	}

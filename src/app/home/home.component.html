@@ -43,20 +43,12 @@
 	</div>
 </div>
 <div *ngIf="loading">
-	<div id="loading-wrapper">
-		<div class="absCenter">
-			<h6>Please Wait...</h6>
-			<div class="loader">
-			</div>
-		</div>
+	<div class="loading-wrapper">
+		<div class="loader"></div>
 	</div>
 </div>
-<div *ngIf="!diff">
-	<div id="loading-wrapper">
-		<div class="absCenter">
-			<h6>Please Wait...</h6>
-			<div class="loader">
-			</div>
-		</div>
+<div *ngIf="seconds!=0 && !diff">
+	<div class="loader-wrapper">
+		<div class="loader"></div>
 	</div>
 </div>

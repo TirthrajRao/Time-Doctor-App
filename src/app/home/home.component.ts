@@ -60,8 +60,8 @@ export class HomeComponent implements OnInit {
 
   /*Socket variables*/
   screenShotRequest: Observable<string[]>;
-  config: SocketIoConfig = { url: 'http://localhost:3000/', options: {} };
-  // config: SocketIoConfig = { url: 'https://timedoctor.mylionsgroup.com:4444/', options: {} };
+  // config: SocketIoConfig = { url: 'http://localhost:3000/', options: {} };
+  config: SocketIoConfig = { url: 'https://timedoctor.mylionsgroup.com:4444/', options: {} };
 
   private _docSub: Subscription;
 
@@ -73,6 +73,39 @@ export class HomeComponent implements OnInit {
     this.fs = (window as any).fs;
     localStorage.setItem("isHomeComponent", "true");
 
+    setTimeout(() => {
+      this.loading = true;
+      this.fs.readFile(this.jsonFilePath, async (err, data) => {
+        console.log("stop data=====>", data);
+        console.log(JSON.parse(data));
+        if (err) {
+          return false
+          console.log("error", err);
+        }
+        else {
+          console.log(JSON.parse(data));
+          const userLogDetails = JSON.parse(data);
+          if ((userLogDetails.attendance.length > 0) && (userLogDetails.attendance[userLogDetails.attendance.length - 1].date == this.currentDate)) {
+            console.log("Same date.");
+            this.diff = userLogDetails.attendance[userLogDetails.attendance.length - 1].difference;
+          }
+          else{
+            console.log("another day");
+            this.diff = "00:00:00";
+          }
+          console.log("this.diff",userLogDetails.attendance[userLogDetails.attendance.length - 1].difference)
+          this.loading = false;          
+          localStorage.setItem("diff", this.diff);
+          console.log("diff1", this.diff)
+          console.log("hours", (this.diff.split(":")[0] == "-") ? 0 : this.diff.split(":")[0])
+          this.hours = (this.diff.split(":")[0] == "-") ? 0 : this.diff.split(":")[0];
+          console.log("minutes", (this.diff.split(":")[0] == "-") ? 0 : this.diff.split(":")[1])
+          this.minutes = (this.diff.split(":")[0] == "-") ? 0 : this.diff.split(":")[1];
+          console.log("seconds", (this.diff.split(":")[0] == "-") ? 0 : this.diff.split(":")[2])
+          this.seconds = (this.diff.split(":")[0] == "-") ? 0 : this.diff.split(":")[2];
+        }
+      });
+    }, 1);
     /**
      * In an every 10 second of interval, this function checks system is connected to internet or not
      * if user is connected with internet, it checks the temp folder named with userId,
@@ -226,7 +259,7 @@ export class HomeComponent implements OnInit {
                       await localStorage.setItem('logs', JSON.stringify(logs));
                       console.log("at the time of stop", logs);
                       await this._userService.storeLogs(logs).subscribe(res => console.log(res), err => console.log(err));
-                      await this.getLogs();
+                      // await this.getLogs();
                       this.loading = false;
                       $("#start").removeClass('disable');
                       console.log("loading",this.loading)
@@ -234,7 +267,7 @@ export class HomeComponent implements OnInit {
                     }
                   }
                 });
-              }, 2000);
+              }, 5000);
               // localStorage.setItem('logs', JSON.stringify(logs));
               // this._userService.storeLogs(logs).subscribe((res) => {
               //   remote.app.exit(0);
@@ -249,7 +282,7 @@ export class HomeComponent implements OnInit {
         remote.app.exit(0);
       }
     });
-    this.getLogs();
+    // this.getLogs();
     this.checkLastLog();
   }
 
@@ -297,7 +330,7 @@ export class HomeComponent implements OnInit {
   startCapturing() {
     console.log("startCapturing")
     if (this.isFirst) {
-      const randomTime = _.random(0, 1000 * 60 * 1);
+      const randomTime = _.random(0, 1000 * 60 * 15);
       this.timeout = setTimeout(() => {
         if (this.running) {
           this.external();
@@ -305,13 +338,13 @@ export class HomeComponent implements OnInit {
       }, randomTime);
     }
     this.intervalId = setInterval(() => {
-      const randomTime = _.random(0, 1000 * 60 * 1);
+      const randomTime = _.random(0, 1000 * 60 * 15);
       this.timeout = setTimeout(() => {
         if (this.running) {
           this.external();
         }
       }, randomTime);
-    }, 1000 * 60 * 1);
+    }, 1000 * 60 * 15);
   }
 
   dataURItoBlob(dataURI: string): Observable<Blob> {
@@ -526,11 +559,9 @@ export class HomeComponent implements OnInit {
     console.log("stop()", moment().utcOffset("+05:30").format('h:mm:ss a'));
     await localStorage.setItem('isRunning', JSON.stringify(this.running));
 
-
     if (this.timeOutFlag) {
       await this.syncData('stop', moment().utcOffset("+05:30").format('h:mm:ss a'));
       $("#stop").addClass('disable');
-
     }
     this.timeOutFlag = false;
 
@@ -556,14 +587,31 @@ export class HomeComponent implements OnInit {
             console.log("userLogDetails-----------", userLogDetails)
             console.log("details-----------", details)
             console.log("difference time", userLogDetails.attendance[userLogDetails.attendance.length - 1].difference)
-            const time = userLogDetails.attendance[userLogDetails.attendance.length - 1].difference
-            console.log("time", time)
+
+
+            console.log("this.diff",userLogDetails.attendance[userLogDetails.attendance.length - 1].difference)
+            this.loading = false;
+            this.diff = userLogDetails.attendance[userLogDetails.attendance.length - 1].difference;
+            localStorage.setItem("diff", this.diff);
+            console.log("diff1", this.diff)
+            console.log("hours", (this.diff.split(":")[0] == "-") ? 0 : this.diff.split(":")[0])
+            this.hours = (this.diff.split(":")[0] == "-") ? 0 : this.diff.split(":")[0];
+            console.log("minutes", (this.diff.split(":")[0] == "-") ? 0 : this.diff.split(":")[1])
+            this.minutes = (this.diff.split(":")[0] == "-") ? 0 : this.diff.split(":")[1];
+            console.log("seconds", (this.diff.split(":")[0] == "-") ? 0 : this.diff.split(":")[2])
+            this.seconds = (this.diff.split(":")[0] == "-") ? 0 : this.diff.split(":")[2];
+
+
+
+            
+            // const time = userLogDetails.attendance[userLogDetails.attendance.length - 1].difference
+            // console.log("time", time)
             const logs = {
               date: moment().format('DD-MM-yyyy'),
               time: {
-                hours: time.split(/[ :]+/)[0],
-                minutes: time.split(/[ :]+/)[1],
-                seconds: time.split(/[ :]+/)[2]
+                hours: this.hours,
+                minutes: this.minutes,
+                seconds: this.seconds
               }
             };
             console.log("logs", logs)
@@ -581,7 +629,7 @@ export class HomeComponent implements OnInit {
             await localStorage.setItem('logs', JSON.stringify(logs));
             console.log("at the time of stop", logs);
             await this._userService.storeLogs(logs).subscribe(res => console.log(res), err => console.log(err));
-            await this.getLogs();
+            // await this.getLogs();
             this.loading = false;
             $("#start").removeClass('disable');
             console.log("loading",this.loading)
@@ -761,35 +809,59 @@ export class HomeComponent implements OnInit {
 
 
   calculateDifference(currentAttendanceLog) {
+    var seconds = 0;
+    var diffSecondTotal = 0 ;
     console.group('calculateDifference', currentAttendanceLog);
+	  currentAttendanceLog.timeLog.forEach(log => {
+      if (log.out == '-') {
+              return;
+      }
+      else {
+        var startTime = moment(log.in, 'hh:mm:ss a');
+        var endTime = moment(log.out, 'hh:mm:ss a');
 
-    var in1 = currentAttendanceLog.timeLog[currentAttendanceLog.timeLog.length - 1].in;
-    var out = currentAttendanceLog.timeLog[currentAttendanceLog.timeLog.length - 1].out;
-    var inn = moment(in1, 'hh:mm:ss: a').diff(moment().startOf('day'), 'seconds');
-    var outt = moment(out, 'hh:mm:ss: a').diff(moment().startOf('day'), 'seconds');
+        var diffSeconds = (endTime.diff(startTime, 'seconds'));
 
-    console.log("in1", in1, "out", out, "inn", inn, "outt", out)
-    let seconds = outt - inn;
-    console.log("seconds", seconds);
-    // console.log("startlogs", JSON.parse(localStorage.getItem("startLogs")).time.seconds)
-    console.log("this.diff before if", this.diff)
-    console.log("diff local storage", localStorage.getItem("diff"))
+        // var inn = moment([log.in.split(/[ :]+/)[0], log.in.split(/[ :]+/)[1], log.in.split(/[ :]+/)[2]], "HH:mm:ss");
+        // var out = moment([log.out.split(/[ :]+/)[0], log.out.split(/[ :]+/)[1], log.out.split(/[ :]+/)[2]], "HH:mm:ss");
+        // console.log("inn", inn, "out", out);
+        
+        // var diffSeconds = out.diff(inn, 'seconds')
+        
+        console.log("diffSeconds", diffSeconds)
+        
+        diffSecondTotal = diffSecondTotal + diffSeconds;
+        
+        console.log("diffSecondTotal", diffSecondTotal);
+      }
+    });
+    // var in1 = currentAttendanceLog.timeLog[currentAttendanceLog.timeLog.length - 1].in;
+    // var out = currentAttendanceLog.timeLog[currentAttendanceLog.timeLog.length - 1].out;
+    // var inn = moment(in1, 'hh:mm:ss: a').diff(moment().startOf('day'), 'seconds');
+    // var outt = moment(out, 'hh:mm:ss: a').diff(moment().startOf('day'), 'seconds');
 
-    // if past log have difference time then it will go inside add that difference + current/recent log seconds
-    if (localStorage.getItem("diff") && localStorage.getItem("diff") != "-") {
-      console.log("this.diff inside if", this.diff)
-      console.log("inside if calculate difference")
+    // console.log("in1", in1, "out", out, "inn", inn, "outt", out)
+    // let seconds = outt - inn;
+    // console.log("seconds", seconds);
+    // // console.log("startlogs", JSON.parse(localStorage.getItem("startLogs")).time.seconds)
+    // console.log("this.diff before if", this.diff)
+    // console.log("diff local storage", localStorage.getItem("diff"))
 
-      var difference = moment(currentAttendanceLog.difference, 'hh:mm:ss: a').diff(moment().startOf('day'), 'seconds');
+    // // if past log have difference time then it will go inside add that difference + current/recent log seconds
+    // if (localStorage.getItem("diff") && localStorage.getItem("diff") != "-") {
+    //   console.log("this.diff inside if", this.diff)
+    //   console.log("   if calculate difference")
 
-      console.log("difference", difference)
+    //   var difference = moment(currentAttendanceLog.difference, 'hh:mm:ss: a').diff(moment().startOf('day'), 'seconds');
 
-      seconds = seconds + difference;
+    //   console.log("difference", difference)
 
-      console.log("seconds++++++", seconds)
-    }
+    //   seconds = seconds + difference;
 
-    seconds = Number(seconds);
+    //   console.log("seconds++++++", seconds)
+    // }
+
+    seconds = Number(diffSecondTotal);
 
     console.log("outer seconds", seconds)
 
