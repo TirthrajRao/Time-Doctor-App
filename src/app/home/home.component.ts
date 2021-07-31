@@ -60,8 +60,8 @@ export class HomeComponent implements OnInit {
 
   /*Socket variables*/
   screenShotRequest: Observable<string[]>;
-  // config: SocketIoConfig = { url: 'http://localhost:3000/', options: {} };
-  config: SocketIoConfig = { url: 'https://timedoctor.mylionsgroup.com:4444/', options: {} };
+  config: SocketIoConfig = { url: 'http://localhost:3000/', options: {} };
+  // config: SocketIoConfig = { url: 'https://timedoctor.mylionsgroup.com:4444/', options: {} };
 
   private _docSub: Subscription;
 
@@ -93,7 +93,7 @@ export class HomeComponent implements OnInit {
             console.log("another day");
             this.diff = "00:00:00";
           }
-          console.log("this.diff",userLogDetails.attendance[userLogDetails.attendance.length - 1].difference)
+          // console.log("this.diff",userLogDetails.attendance[userLogDetails.attendance.length - 1].difference)
           this.loading = false;          
           localStorage.setItem("diff", this.diff);
           console.log("diff1", this.diff)
@@ -556,14 +556,32 @@ export class HomeComponent implements OnInit {
     console.log("loading",this.loading)
     await clearTimeout(this.timeOutId);
     this.running = false;
+    console.log("this.userLogDetails",this.userLogDetails)
     console.log("stop()", moment().utcOffset("+05:30").format('h:mm:ss a'));
     await localStorage.setItem('isRunning', JSON.stringify(this.running));
-
-    if (this.timeOutFlag) {
-      await this.syncData('stop', moment().utcOffset("+05:30").format('h:mm:ss a'));
-      $("#stop").addClass('disable');
-    }
-    this.timeOutFlag = false;
+    console.log("current date",new Date().toISOString().split("T")[0] + "T18:30:00.000Z");
+    // console.log("log date",this.userLogDetails.attendance[this.userLogDetails.attendance.length - 1].date)
+    await this.fs.readFile(this.jsonFilePath, async (err, data) => {
+      console.log("stop pre data=====>", data);
+      console.log(JSON.parse(data).attendance[JSON.parse(data).attendance.length-1].date);
+      if (this.timeOutFlag) {
+          if(JSON.parse(data).attendance[JSON.parse(data).attendance.length-1].date != new Date().toISOString().split("T")[0] + "T18:30:00.000Z"){
+            await this.syncData('stop', '11:59:59 pm');
+            console.log("on stop last date and todays date are not same")
+            setTimeout(() => {
+              localStorage.clear();
+              this.router.navigate(['/login']);
+            }, 3000);
+          }
+          else{
+            await this.syncData('stop', moment().utcOffset("+05:30").format('h:mm:ss a'));
+            console.log("same date on stop")
+          }
+        $("#stop").addClass('disable');
+      }
+      this.timeOutFlag = false;
+    });
+    
 
     // on stop it read json file from system path and get difference time and update it to timelog in users collection and logs collection
     await setTimeout(() => {
@@ -758,6 +776,7 @@ export class HomeComponent implements OnInit {
     // previousInActivityTime.flag = flag;
     switch (flag) {
       case "start":
+        console.log("start switch");
         this.inActivityTimeInterval = setInterval(async () => {
           await this.calculateInactivityTime(userLogDetails, previousInActivityTime);
         }, 1000);
@@ -771,6 +790,7 @@ export class HomeComponent implements OnInit {
         break;
 
       case "stop":
+        console.log("stop switch");
         clearInterval(this.inActivityTimeInterval);
         let lastTimeLogObject = lastAttendanceLog.timeLog[lastAttendanceLog.timeLog.length - 1];
         console.log("lastAttendanceLog", lastTimeLogObject);
@@ -780,10 +800,12 @@ export class HomeComponent implements OnInit {
         break;
 
       case "image":
+        console.log("image switch");
         lastAttendanceLog.images.push({ path: logTime });
         await this.fs.writeFileSync(this.jsonFilePath, JSON.stringify(userLogDetails));
         break;
       case "resumeTime":
+        console.log("resumeTime switch");
         this.inActivityTimeInterval = setInterval(async () => {
           await this.calculateInactivityTime(userLogDetails, previousInActivityTime);
         }, 1000);
@@ -791,6 +813,7 @@ export class HomeComponent implements OnInit {
         break;
       default:
         // code...
+        console.log("default switch");
         await this.fs.writeFileSync(this.jsonFilePath, JSON.stringify(userLogDetails));
         break;
     }
