@@ -75,6 +75,7 @@ export class HomeComponent implements OnInit {
 
     setTimeout(() => {
       this.loading = true;
+      this.jsonFilePath = remote.app.getPath("userData") + "/" + this.userInfo._id + ".json";
       this.fs.readFile(this.jsonFilePath, async (err, data) => {
         console.log("stop data=====>", data);
         console.log(JSON.parse(data));
@@ -111,6 +112,37 @@ export class HomeComponent implements OnInit {
      * if user is connected with internet, it checks the temp folder named with userId,
      * any images found inside folder it will upload to server and delete it from local
      */
+    interval(1000).subscribe(x => {
+      if(this.running){
+        // console.log("checking true or false currentdate change",this.currentDate  != new Date().toISOString().split("T")[0] + "T18:30:00.000Z");
+        // console.log("this.currentDate",this.currentDate);
+        // console.log("New Date",new Date().toISOString().split("T")[0] + "T18:30:00.000Z");
+        if(this.currentDate  != new Date().toISOString().split("T")[0] + "T18:30:00.000Z"){
+          console.log("date changed")
+          this.currentDate = new Date().toISOString().split("T")[0] + "T18:30:00.000Z";
+          this.jsonFilePath = remote.app.getPath("userData") + "/" + this.userInfo._id + ".json";
+          this.fs.readFile(this.jsonFilePath, async (err, data) => {
+            console.log("data=====>", data);
+            console.log(JSON.parse(data));
+            if (err) {
+              return false
+              console.log("error", err);
+            }
+            else {
+              console.log(JSON.parse(data));
+              const userLogDetails = JSON.parse(data);
+              console.log(userLogDetails)
+              await this.syncData('stop', '11:59:59 pm');
+              await setTimeout(() => {
+                this.syncData('start', '12:00:01 am');
+              }, 3000);
+            }
+          });
+        }
+        
+
+      }
+    })
     interval(10000).subscribe(x => {
       const files = fsystem.readdirSync(this.imageFilesPath)
       if (navigator.onLine && files.length) {
@@ -532,6 +564,7 @@ export class HomeComponent implements OnInit {
   // update time
   updateTime() {
     console.log("updateTime")
+    console.log("this.date",this.currentDate)
     // alert("Timmer called")
     this.seconds++;
 
@@ -565,18 +598,18 @@ export class HomeComponent implements OnInit {
       console.log("stop pre data=====>", data);
       console.log(JSON.parse(data).attendance[JSON.parse(data).attendance.length-1].date);
       if (this.timeOutFlag) {
-          if(JSON.parse(data).attendance[JSON.parse(data).attendance.length-1].date != new Date().toISOString().split("T")[0] + "T18:30:00.000Z"){
-            await this.syncData('stop', '11:59:59 pm');
-            console.log("on stop last date and todays date are not same")
-            setTimeout(() => {
-              localStorage.clear();
-              this.router.navigate(['/login']);
-            }, 3000);
-          }
-          else{
+          // if(JSON.parse(data).attendance[JSON.parse(data).attendance.length-1].date != new Date().toISOString().split("T")[0] + "T18:30:00.000Z"){
+          //   await this.syncData('stop', '11:59:59 pm');
+          //   console.log("on stop last date and todays date are not same")
+            // setTimeout(() => {
+            //   localStorage.clear();
+            //   this.router.navigate(['/login']);
+            // }, 3000);
+          // }
+          // else{
             await this.syncData('stop', moment().utcOffset("+05:30").format('h:mm:ss a'));
             console.log("same date on stop")
-          }
+          // }
         $("#stop").addClass('disable');
       }
       this.timeOutFlag = false;
@@ -753,7 +786,7 @@ export class HomeComponent implements OnInit {
     console.group("updateRecordFile");
     console.log("flag==>", flag, "userLogDetaiils===>", userLogDetails, "logTime==>" + logTime);
 
-    let lastAttendanceLog = userLogDetails.attendance[userLogDetails.attendance.length - 1];
+    var lastAttendanceLog = userLogDetails.attendance[userLogDetails.attendance.length - 1];
     console.log("lastAttendanceLog", lastAttendanceLog)
 
     // if user timelog doesn't match with current log or not time log of current day, set default values
@@ -768,7 +801,7 @@ export class HomeComponent implements OnInit {
       console.log("userLogDetails", userLogDetails);
     }
     // if system found last attendance
-    lastAttendanceLog = userLogDetails.attendance[userLogDetails.attendance.length - 1];
+    // lastAttendanceLog = userLogDetails.attendance[userLogDetails.attendance.length - 1];
     console.log("lastAttendanceLog", lastAttendanceLog)
     const previousInActivityTime = lastAttendanceLog.inActivityTime;
     console.log("previousInActivityTime", previousInActivityTime)
