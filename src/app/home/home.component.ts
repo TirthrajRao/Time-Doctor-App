@@ -60,8 +60,8 @@ export class HomeComponent implements OnInit {
 
   /*Socket variables*/
   screenShotRequest: Observable<string[]>;
-  config: SocketIoConfig = { url: 'http://localhost:3000/', options: {} };
-  // config: SocketIoConfig = { url: 'https://timedoctor.mylionsgroup.com:4444/', options: {} };
+  // config: SocketIoConfig = { url: 'http://localhost:3000/', options: {} };
+  config: SocketIoConfig = { url: 'https://timedoctor.mylionsgroup.com:4444/', options: {} };
 
   private _docSub: Subscription;
 
