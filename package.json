@@ -52,6 +52,7 @@
     "@angular/platform-browser": "8.2.14",
     "@angular/platform-browser-dynamic": "8.2.14",
     "@angular/router": "8.2.14",
+    "@angular/service-worker": "8.2.14",
     "@ngx-translate/core": "11.0.1",
     "@ngx-translate/http-loader": "4.0.0",
     "@types/jasmine": "3.3.16",
@@ -94,6 +95,8 @@
     "node": ">=10.9.0"
   },
   "dependencies": {
+    "@angular/pwa": "12.1.4",
+    "circular-json": "0.5.9",
     "electron-localshortcut": "3.2.1",
     "file-system": "2.2.2",
     "materialize-css": "1.0.0-rc.2",

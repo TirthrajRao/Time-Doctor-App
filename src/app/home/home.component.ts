@@ -13,7 +13,9 @@ declare var externalFunction: any;
 declare var $: any;
 import { startWith } from 'rxjs/operators';
 import { Socket, SocketIoConfig } from 'ngx-socket-io';
-import Swal from 'sweetalert2'
+import Swal from 'sweetalert2';
+import { UpdateService } from '../services/update.service';
+
 const fsystem = require('fs');
 @Component({
   selector: 'app-home',
@@ -60,23 +62,30 @@ export class HomeComponent implements OnInit {
 
   /*Socket variables*/
   screenShotRequest: Observable<string[]>;
-  // config: SocketIoConfig = { url: 'http://localhost:3000/', options: {} };
+  // config: SocketIoConfig = { url: 'http://localhost:3000/', options: {} };  
   config: SocketIoConfig = { url: 'https://timedoctor.mylionsgroup.com:4444/', options: {} };
+  // config: SocketIoConfig = { url: 'http://132.146.160.69:3000/', options: {} };
 
   private _docSub: Subscription;
 
 
-  constructor(public _userService: UserService,
-    public router: Router,
-    private _socket: Socket,
-    private _change: ChangeDetectorRef) {
+  constructor(
+      public _userService: UserService,
+      public router: Router,
+      private _socket: Socket,
+      private _change: ChangeDetectorRef,
+      public sw: UpdateService
+    ) {
     this.fs = (window as any).fs;
     localStorage.setItem("isHomeComponent", "true");
 
-    setTimeout(() => {
-      this.loading = true;
+    // this.sw.checkForUpdate();
+    this.running = false;
+    localStorage.setItem("isRunning",JSON.stringify(this.running));
+    this.loading = true;
+    setTimeout(async() => {
       this.jsonFilePath = remote.app.getPath("userData") + "/" + this.userInfo._id + ".json";
-      this.fs.readFile(this.jsonFilePath, async (err, data) => {
+      await this.fs.readFile(this.jsonFilePath, async (err, data) => {
         console.log("stop data=====>", data);
         console.log(JSON.parse(data));
         if (err) {
@@ -88,14 +97,44 @@ export class HomeComponent implements OnInit {
           const userLogDetails = JSON.parse(data);
           if ((userLogDetails.attendance.length > 0) && (userLogDetails.attendance[userLogDetails.attendance.length - 1].date == this.currentDate)) {
             console.log("Same date.");
+            // console.log("last log",userLogDetails.attendance[userLogDetails.attendance.length-1].timeLog[userLogDetails.attendance[userLogDetails.attendance.length-1].timeLog.length-1].out)
             this.diff = userLogDetails.attendance[userLogDetails.attendance.length - 1].difference;
+            console.log("userLog",userLogDetails.attendance[userLogDetails.attendance.length-1])
+            if(userLogDetails && userLogDetails.attendance && userLogDetails.attendance[userLogDetails.attendance.length-1] && userLogDetails.attendance[userLogDetails.attendance.length-1].timeLog.length && userLogDetails.attendance[userLogDetails.attendance.length-1].timeLog[userLogDetails.attendance[userLogDetails.attendance.length-1].timeLog.length-1].out && userLogDetails.attendance[userLogDetails.attendance.length-1].timeLog[userLogDetails.attendance[userLogDetails.attendance.length-1].timeLog.length-1].out == '-'){
+              console.log("last out is null");
+              
+              await this.syncData('stop', localStorage.getItem("lastTime") ? localStorage.getItem("lastTime") :  moment().utcOffset("+05:30").format('h:mm:ss a') );
+              await setTimeout(async() => {
+                await this.fs.readFile(this.jsonFilePath, async (err, data) => {
+                  console.log("stop data=====>", data);
+                  console.log(JSON.parse(data));
+                  if (err) {
+                    return false
+                    console.log("error", err);
+                  }
+                  else {
+                    console.log("read else")
+                    console.log(JSON.parse(data));
+                    // const userLogDetails = JSON.parse(data);
+                    this.diff = JSON.parse(data).attendance[JSON.parse(data).attendance.length - 1].difference;
+                    this.hours = (this.diff.split(":")[0] == "-") ? 0 : this.diff.split(":")[0];
+                    console.log("minutes", (this.diff.split(":")[0] == "-") ? 0 : this.diff.split(":")[1])
+                    this.minutes = (this.diff.split(":")[0] == "-") ? 0 : this.diff.split(":")[1];
+                    console.log("seconds", (this.diff.split(":")[0] == "-") ? 0 : this.diff.split(":")[2])
+                    this.seconds = (this.diff.split(":")[0] == "-") ? 0 : this.diff.split(":")[2];
+                  }
+                })
+                this.loading = false;
+                console.log("loading false")
+              }, 2000);
+            }
           }
           else{
             console.log("another day");
             this.diff = "00:00:00";
           }
           // console.log("this.diff",userLogDetails.attendance[userLogDetails.attendance.length - 1].difference)
-          this.loading = false;          
+               
           localStorage.setItem("diff", this.diff);
           console.log("diff1", this.diff)
           console.log("hours", (this.diff.split(":")[0] == "-") ? 0 : this.diff.split(":")[0])
@@ -104,6 +143,10 @@ export class HomeComponent implements OnInit {
           this.minutes = (this.diff.split(":")[0] == "-") ? 0 : this.diff.split(":")[1];
           console.log("seconds", (this.diff.split(":")[0] == "-") ? 0 : this.diff.split(":")[2])
           this.seconds = (this.diff.split(":")[0] == "-") ? 0 : this.diff.split(":")[2];
+          setTimeout(() => {
+            this.loading = false;
+            console.log("loading false")
+          }, 2000);
         }
       });
     }, 1);
@@ -182,6 +225,9 @@ export class HomeComponent implements OnInit {
 
   }
 
+  send(arg) {
+    ipcRenderer.send('asynchronous-message', arg);
+  }
 
   ngOnInit() {
     $("#stop").addClass('disable');
@@ -218,7 +264,7 @@ export class HomeComponent implements OnInit {
      * ask question, confirmation to close window
      *  */
     remote.getCurrentWindow().on('close', (e) => {
-      console.log(e);
+      // console.log(e);
 
       // e.preventDefault();
       if (JSON.parse(localStorage.getItem('isRunning'))) {
@@ -293,25 +339,35 @@ export class HomeComponent implements OnInit {
                       await this._userService.storeLogs(logs).subscribe(res => console.log(res), err => console.log(err));
                       // await this.getLogs();
                       this.loading = false;
+                      console.log("loading false")
                       $("#start").removeClass('disable');
                       console.log("loading",this.loading)
-                      remote.app.exit(0)
+                      // remote.app.exit(0)
+                      // remote.getCurrentWindow().hide();
+                      this.send('tray');
+                      // ipcRenderer.send("routeURL",this.router.url);
+                      console.log(this.router.url);
                     }
                   }
                 });
               }, 5000);
-              // localStorage.setItem('logs', JSON.stringify(logs));
-              // this._userService.storeLogs(logs).subscribe((res) => {
-              //   remote.app.exit(0);
-              //   console.log("Helloooo");
-              // }, (err) => {
-              //   console.log(err)
-              // });
+              
+
+              localStorage.setItem('logs', JSON.stringify(logs));
+              this._userService.storeLogs(logs).subscribe((res) => {
+                remote.app.exit(0);
+                console.log("Helloooo");
+              }, (err) => {
+                console.log(err)
+              });
             }
           })
       }
       else {
-        remote.app.exit(0);
+        // remote.app.exit(0);
+        // remote.getCurrentWindow().hide();
+        this.send('tray')
+        console.log(this.router.url);
       }
     });
     // this.getLogs();
@@ -534,6 +590,8 @@ export class HomeComponent implements OnInit {
   timer() {
     this.timeOutId = setTimeout(() => {
       console.log("times()", moment().utcOffset("+05:30").format('h:mm:ss a'));
+      // localStorage.setItem("lastTime",moment().utcOffset("+05:30").format('h:mm:ss a'))
+      
       if (!this.timeOutFlag) {
         this.syncData('start', moment().utcOffset("+05:30").format('h:mm:ss a'));
         this.timeOutFlag = true;
@@ -567,16 +625,20 @@ export class HomeComponent implements OnInit {
     console.log("this.date",this.currentDate)
     // alert("Timmer called")
     this.seconds++;
-
+    
     if (this.seconds === 60) {
       this.seconds = 0;
       this.minutes++;
     }
-
+    
     if (this.minutes === 60) {
       this.minutes = 0;
       this.hours++;
     }
+    
+    console.log("updateTime this.seconds",this.seconds, typeof(this.seconds));
+    console.log("updateTime this.minutes",this.minutes, typeof(this.minutes));
+    console.log("updateTime this.hours",this.hours, typeof(this.hours));
 
     this._change.detectChanges();
   }
@@ -642,6 +704,7 @@ export class HomeComponent implements OnInit {
 
             console.log("this.diff",userLogDetails.attendance[userLogDetails.attendance.length - 1].difference)
             this.loading = false;
+            console.log("loading false")
             this.diff = userLogDetails.attendance[userLogDetails.attendance.length - 1].difference;
             localStorage.setItem("diff", this.diff);
             console.log("diff1", this.diff)
@@ -682,6 +745,7 @@ export class HomeComponent implements OnInit {
             await this._userService.storeLogs(logs).subscribe(res => console.log(res), err => console.log(err));
             // await this.getLogs();
             this.loading = false;
+            console.log("loading false")
             $("#start").removeClass('disable');
             console.log("loading",this.loading)
           }
@@ -742,6 +806,7 @@ export class HomeComponent implements OnInit {
     console.log("clear")
     this.seconds = 0;
     this.minutes = 0;
+    this.hours = 0;
     this.running = false;
     localStorage.setItem('isRunning', JSON.stringify(this.running));
     clearInterval(this.intervalId);
@@ -757,15 +822,29 @@ export class HomeComponent implements OnInit {
     if (this.fs.existsSync(this.jsonFilePath)) {
       console.log("Files exitssss");
       await this.fs.readFile(this.jsonFilePath, async (err, data) => {
-        console.log("data====>", data);
+        // console.log("data====>", data);
         if (err) console.log("error", err);
         else {
-          console.log("JSON Parse inside syncData", JSON.parse(data));
+          // console.log("JSON Parse inside syncData", JSON.parse(data));
           this.userLogDetails = JSON.parse(data);
 
-          console.log("Data", data.toString('utf-8'));
-          console.log("Data as userLogDetails", this.userLogDetails);
+          // console.log("Data", data.toString('utf-8'));
+          // console.log("Data as userLogDetails", this.userLogDetails);
           console.log("logTime", logTime);
+          var lastAttendanceLog = JSON.parse(data).attendance[JSON.parse(data).attendance.length - 1];
+    console.log("lastAttendanceLog", lastAttendanceLog)
+
+    // if user timelog doesn't match with current log or not time log of current day, set default values
+        if ((!lastAttendanceLog) || (lastAttendanceLog.date != this.currentDate)) {
+          this.userLogDetails.attendance.push({
+            date: this.currentDate,
+            timeLog: [],
+            difference: '-',
+            inActivityTime: 0,
+            images: []
+          });
+          console.log("userLogDetails", this.userLogDetails);
+        }
           await this.updateRecordFile(flag, this.userLogDetails, logTime);
           return
         }
@@ -787,19 +866,19 @@ export class HomeComponent implements OnInit {
     console.log("flag==>", flag, "userLogDetaiils===>", userLogDetails, "logTime==>" + logTime);
 
     var lastAttendanceLog = userLogDetails.attendance[userLogDetails.attendance.length - 1];
-    console.log("lastAttendanceLog", lastAttendanceLog)
+    // console.log("lastAttendanceLog", lastAttendanceLog)
 
-    // if user timelog doesn't match with current log or not time log of current day, set default values
-    if ((!lastAttendanceLog) || (lastAttendanceLog.date != this.currentDate)) {
-      userLogDetails.attendance.push({
-        date: this.currentDate,
-        timeLog: [],
-        difference: '-',
-        inActivityTime: 0,
-        images: []
-      });
-      console.log("userLogDetails", userLogDetails);
-    }
+    // // if user timelog doesn't match with current log or not time log of current day, set default values
+    // if ((!lastAttendanceLog) || (lastAttendanceLog.date != this.currentDate)) {
+    //   userLogDetails.attendance.push({
+    //     date: this.currentDate,
+    //     timeLog: [],
+    //     difference: '-',
+    //     inActivityTime: 0,
+    //     images: []
+    //   });
+    //   console.log("userLogDetails", userLogDetails);
+    // }
     // if system found last attendance
     // lastAttendanceLog = userLogDetails.attendance[userLogDetails.attendance.length - 1];
     console.log("lastAttendanceLog", lastAttendanceLog)

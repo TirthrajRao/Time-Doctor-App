@@ -8,6 +8,10 @@ import { LoginComponent } from './login/login.component';
 import { HomeComponent } from './home/home.component';
 import { NumpadPipe } from './utils/numpad.pipe';
 import { SocketIoModule, SocketIoConfig } from 'ngx-socket-io';
+import { ServiceWorkerModule } from '@angular/service-worker';
+import { AppConfig } from '../environments/environment';
+import { UpdateService } from './services/update.service';
+
 
 
 // const config: SocketIoConfig = { url: 'http://localhost:3000/', options: {} };
@@ -15,7 +19,7 @@ const config: SocketIoConfig = { url: 'https://timedoctor.mylionsgroup.com:4444/
 // const config: SocketIoConfig = { url: 'http://192.168.43.71:3000', options: {} }; //pr'S WIFI
 // const config: SocketIoConfig = { url: 'http://192.168.1.66:3000', options: {} }; //Rao'S WIFI
 
-// const config: SocketIoConfig = { url: 'http://192.168.43.17:3000', options: {} }; //Ishita's wifi
+// const config: SocketIoConfig = { url: 'http://132.146.160.69:3000', options: {} }; // rao parasbhai
 
 
 @NgModule({
@@ -33,9 +37,12 @@ const config: SocketIoConfig = { url: 'https://timedoctor.mylionsgroup.com:4444/
     HttpClientModule,
     FormsModule,
     ReactiveFormsModule,
-    SocketIoModule.forRoot(config)
+    SocketIoModule.forRoot(config),
+    // ServiceWorkerModule.register('ngsw-worker.js', { enabled: AppConfig.production }),
+    ServiceWorkerModule.register('ngsw-worker.js', { enabled: true }),
+  
   ],
-  providers: [],
+  providers: [UpdateService],
   bootstrap: [AppComponent]
 })
 export class AppModule { }
