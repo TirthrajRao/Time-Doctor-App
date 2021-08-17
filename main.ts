@@ -12,17 +12,23 @@ import {
 import * as path from 'path';
 import * as url from 'url';
 import * as electronLocalshortcut from 'electron-localshortcut'
+import { async } from '@angular/core/testing';
 // const assetsDirectory = path.join(__dirname, 'assets/favicon.png')
 let win: BrowserWindow = null;
-let tray = null;
+let tray: any;
 const args = process.argv.slice(1),
   serve = args.some(val => val === '--serve');
 ipcMain.on("asynchronous-message", (event, arg) => {
   if (arg === "tray") win.hide();
-  if (arg === "quit") app.quit();
+  if (arg === "quit"){
+    app.quit();
+    app.exit();
+    process.exit();
+  }
 });
-function createWindow(): BrowserWindow {
 
+function createWindow(): BrowserWindow {
+  
   const electronScreen = screen;
   const size = electronScreen.getPrimaryDisplay().workAreaSize;
   // Create the browser window.
@@ -61,7 +67,7 @@ function createWindow(): BrowserWindow {
       slashes: true
     }));
     // debug
-    win.webContents.openDevTools()
+    // win.webContents.openDevTools()
   }
 
   if (serve) {
@@ -77,8 +83,8 @@ function createWindow(): BrowserWindow {
   // Emitted when the window is closed.
   win.on('closed', () => {
     console.log("closed")
-    win.removeAllListeners("close");
-    win = null;
+    // win.removeAllListeners("close");
+    // win = null;
   });
 
   win.setVisibleOnAllWorkspaces(true);
@@ -88,75 +94,37 @@ function createWindow(): BrowserWindow {
 }
 
 
-function createTray() {
-  var tray = new Tray(path.join(__dirname, 'dist/assets/logo.png'))
-  const handleClick = (menuItem, browserWindow, event) => {
-    console.log({ menuItem, browserWindow, event });
-    console.log({ remote });
-    
-    switch (menuItem) {
-      case 'Show-App':
-        console.log("show-app")
+function createTray(app) {
+  tray = new Tray(path.join(__dirname, 'dist/assets/logo.png'))
+  const contextMenu = Menu.buildFromTemplate([
+    {
+      label: 'Show-App',
+      click: function () {
         win.show();
-        break;
-        case 'Hide':
-          win.hide();
-          break;
-          default:
-            // alert(' default ' + JSON.stringify(remote))
-            // alert(' default ' + JSON.stringify(remote.app))
-            dialog.showMessageBox(null, {
-              type: 'question',
-              buttons: ['Cancel', 'Yes, please', 'No, thanks'],
-              defaultId: 2,
-              title: 'console',
-              message: 'Console.log',
-              detail: 'remote:' + remote + ' remote.app:' + remote.app + 'remote.app.exit(0):' + remote.app.exit(0),
-            });
-        remote.app.exit(0);
-        console.log("default")
-        // remote.app.exit(0);
-        break;
       }
-      
-    }
-    const contextMenu = Menu.buildFromTemplate([
-        {
-          label: 'Show-App',
-          type: 'radio',
-          click: function(){
-            win.show();
-          }
-          // click() {
-          //   // handleClick('Show-App', '', '')
-          //   win.show();
-          // }
+    },
+    {
+      label: 'Hide',
+      click: function () {
+        win.hide();
+      }
+    },
+    {
+      label: 'Quit',
+      click: async() => {
+        // tray.destroy();
+        // tray.destroy();
 
-
-          // click: function(){
-            //   console.log("show app");
-            //   // ipcMain.emit("msg","show app")
-            // }
-        },
-        {
-          label: 'Hide',
-          type: 'radio',
-          click: function(){
-            win.hide();
-          }
-            // click() {
-              //   // handleClick('Hide', '', '')
-              //   win.hide();
-              // }
-              
-            // click: function () { remote.app.exit(0); }
-        }
-      ])
-      tray.setToolTip('Rao Doctor')
-      tray.setContextMenu(contextMenu)
-      // dialog.showMessageBox(win, {message: tray.getTitle()})
+        app.quit();
+        
+      }
     }
-    
+  ])
+  
+  tray.setContextMenu(contextMenu)
+  tray.setContextMenu(contextMenu)
+}
+
 try {
 
   // Custom menu.
@@ -186,7 +154,31 @@ try {
   // This method will be called when Electron has finished
   // initialization and is ready to create browser windows.
   // Some APIs can only be used after this event occurs.
-  app.on('ready', () => { createTray(); createWindow(); });
+  
+  const gotTheLock = app.requestSingleInstanceLock()
+
+  if (!gotTheLock) {
+    app.quit()
+  }
+  else {
+    app.on('second-instance', (event, commandLine, workingDirectory) => {
+      // Someone tried to run a second instance, we should focus our window.
+      if (win) {
+        if (win.isMinimized()) win.restore()
+        win.focus()
+      }
+    })
+    app.on('ready', () => {
+      // ipcMain.on('quit',()=>{
+      //   dialog.showMessageBox(win,{message:'quit'})
+      //   app.quit();
+      //   app.exit();
+      //   process.exit();
+      // })
+      createWindow();
+      createTray(app);
+    })
+  }
 
   app.disableHardwareAcceleration();
 
@@ -203,8 +195,8 @@ try {
     // On OS X it's common to re-create a window in the app when the
     // dock icon is clicked and there are no other windows open.
     if (win === null) {
-      createTray();
       createWindow();
+      createTray(app);
     }
   });
 

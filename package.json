@@ -1,7 +1,7 @@
 {
   "name": "rao-doctor",
   "version": "0.0.1",
-  "description": "Angular 8 with Electron (Typescript + SASS + Hot Reload)",
+  "description": "Rao Doctor",
   "homepage": "https://github.com/MehulBhatt45/TimeDoctor",
   "author": {
     "name": "Mehul Bhatt",

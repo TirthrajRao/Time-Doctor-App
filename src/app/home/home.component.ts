@@ -7,7 +7,7 @@ import * as socketIO from 'socket.io-client';
 import * as moment from 'moment';
 import * as _ from 'lodash';
 import { Observable, Observer, Subscription, interval } from 'rxjs';
-import { remote, dialog, ipcRenderer, nativeImage } from 'electron';
+import { remote, dialog, ipcRenderer, nativeImage, ipcMain } from 'electron';
 declare var require: any;
 declare var externalFunction: any;
 declare var $: any;
@@ -15,6 +15,7 @@ import { startWith } from 'rxjs/operators';
 import { Socket, SocketIoConfig } from 'ngx-socket-io';
 import Swal from 'sweetalert2';
 import { UpdateService } from '../services/update.service';
+import { async } from '@angular/core/testing';
 
 const fsystem = require('fs');
 @Component({
@@ -78,6 +79,11 @@ export class HomeComponent implements OnInit {
     ) {
     this.fs = (window as any).fs;
     localStorage.setItem("isHomeComponent", "true");
+
+    // ipcRenderer.on('quit', async()=>{
+    //   await this.onQuit();
+    //   await ipcRenderer.send('quit','quit')
+    // })
 
     // this.sw.checkForUpdate();
     this.running = false;
@@ -267,20 +273,22 @@ export class HomeComponent implements OnInit {
       // console.log(e);
 
       // e.preventDefault();
+      // this.send('tray');
+      
       if (JSON.parse(localStorage.getItem('isRunning'))) {
         const choice = remote.dialog.showMessageBox(
           remote.getCurrentWindow(),
           {
             type: 'question',
-            buttons: ['No', 'Yes'],
+            buttons: ['Cancel', 'Hide','Quit'],
             title: 'Confirm',
             message: 'Your timer is running. Do you really want to close the application?',
-            detail: "Closing app will stop your timer."
+            detail: "Quiting app will stop your timer."
           }
         )
           .then(async (res) => {
-            console.log(res.response);
-            if (res.response) {
+            console.log("res...",res.response);
+            if (res.response == 2) {
               const logs = {
                 date: moment().format('DD-MM-yyyy'),
                 time: {
@@ -303,7 +311,7 @@ export class HomeComponent implements OnInit {
                     console.log(JSON.parse(data));
                     const userLogDetails = JSON.parse(data);
           
-                    /*Check for lastest version*/
+                    // Check for lastest version
                     if (!userLogDetails.isLatestVersion) {
                       let details = await this.appendFilesToJson(userLogDetails);
                       details.append('jsonData', JSON.stringify(userLogDetails));
@@ -344,7 +352,7 @@ export class HomeComponent implements OnInit {
                       console.log("loading",this.loading)
                       // remote.app.exit(0)
                       // remote.getCurrentWindow().hide();
-                      this.send('tray');
+                      this.send('quit');
                       // ipcRenderer.send("routeURL",this.router.url);
                       console.log(this.router.url);
                     }
@@ -355,23 +363,157 @@ export class HomeComponent implements OnInit {
 
               localStorage.setItem('logs', JSON.stringify(logs));
               this._userService.storeLogs(logs).subscribe((res) => {
-                remote.app.exit(0);
+                // remote.app.exit(0);
                 console.log("Helloooo");
               }, (err) => {
                 console.log(err)
               });
+            }
+            if(res.response == 1){
+              this.send('tray')
             }
           })
       }
       else {
         // remote.app.exit(0);
         // remote.getCurrentWindow().hide();
-        this.send('tray')
-        console.log(this.router.url);
+        // this.send('tray')
+        // const choice = remote.dialog.showMessageBox(
+        //   remote.getCurrentWindow(),
+        //   {
+        //     type: 'question',
+        //     buttons: ['Quit'],
+        //     title: 'Confirm',
+        //     message: 'Your timer is running. Do you really want to close the application?',
+        //     detail: "Quiting app will stop your timer."
+        //   }
+        // )
+        // .then(async (res) => {
+        //   console.log("res...",res.response);
+        //   if (res.response) {
+            this.send('quit')
+        //   }
+        //   else{
+        //     this.send('tray')
+        //   }
+        // })
+            
+        // console.log(this.router.url);
       }
+      
     });
     // this.getLogs();
     this.checkLastLog();
+  }
+
+  onQuit() {
+    if (JSON.parse(localStorage.getItem('isRunning'))) {
+      const choice = remote.dialog.showMessageBox(
+        remote.getCurrentWindow(),
+        {
+          type: 'question',
+          buttons: ['No', 'Yes'],
+          title: 'Confirm',
+          message: 'Your timer is running. Do you really want to close the application?',
+          detail: "Closing app will stop your timer."
+        }
+      )
+        .then(async (res) => {
+          console.log(res.response);
+          if (res.response) {
+            const logs = {
+              date: moment().format('DD-MM-yyyy'),
+              time: {
+                hours: this.hours,
+                minutes: this.minutes,
+                seconds: this.seconds
+              }
+            };
+            await this.checkStatus("offline")
+            await this.stop()
+            await setTimeout(() => {
+              this.fs.readFile(this.jsonFilePath, async (err, data) => {
+                console.log("stop data=====>", data);
+                console.log(JSON.parse(data));
+                if (err) {
+                  return false
+                  console.log("error", err);
+                }
+                else {
+                  console.log(JSON.parse(data));
+                  const userLogDetails = JSON.parse(data);
+        
+                  // Check for lastest version
+                  if (!userLogDetails.isLatestVersion) {
+                    let details = await this.appendFilesToJson(userLogDetails);
+                    details.append('jsonData', JSON.stringify(userLogDetails));
+                    details.append('userId', this.userInfo._id);
+                    console.log(userLogDetails, details);
+                    console.log("userLogDetails-----------", userLogDetails)
+                    console.log("details-----------", details)
+                    console.log("difference time", userLogDetails.attendance[userLogDetails.attendance.length - 1].difference)
+                    const time = userLogDetails.attendance[userLogDetails.attendance.length - 1].difference
+                    console.log("time", time)
+                    const logs = {
+                      date: moment().format('DD-MM-yyyy'),
+                      time: {
+                        hours: time.split(/[ :]+/)[0],
+                        minutes: time.split(/[ :]+/)[1],
+                        seconds: time.split(/[ :]+/)[2]
+                      }
+                    };
+                    console.log("logs", logs)
+                    // sends user time logs of the day
+                    await this._userService.uploadbase64Img(details).subscribe((res) => {
+                      console.log("the res is the ==========>", res);
+                      // this.syncData('image', res.files[0]);
+                      this.isFirst = false;
+                      return true;
+                    }, (err) => {
+                      return false;
+                      console.log("the err is the ==========>", err);
+                    })
+                    // adding last log into localStorage it will helps to calculate difference, next stopped time
+                    await localStorage.setItem('logs', JSON.stringify(logs));
+                    console.log("at the time of stop", logs);
+                    await this._userService.storeLogs(logs).subscribe(res => console.log(res), err => console.log(err));
+                    // await this.getLogs();
+                    this.loading = false;
+                    console.log("loading false")
+                    $("#start").removeClass('disable');
+                    console.log("loading",this.loading)
+                    // remote.app.exit(0)
+                    // remote.getCurrentWindow().hide();
+                    this.send('quit');
+                    
+                    // ipcRenderer.send("routeURL",this.router.url);
+                    console.log(this.router.url);
+                  }
+                }
+              });
+            }, 5000);
+            
+
+            localStorage.setItem('logs', JSON.stringify(logs));
+            this._userService.storeLogs(logs).subscribe((res) => {
+              // remote.app.exit(0);
+              console.log("Helloooo");
+            }, (err) => {
+              console.log(err)
+            });
+          }
+          if(res.response == 1){
+            this.send('tray');
+          }
+        })
+    }
+    else {
+      // remote.app.exit(0);
+      // remote.getCurrentWindow().hide();
+      this.send('tray')
+      console.log(this.router.url);
+    }
+    
   }
 
 
