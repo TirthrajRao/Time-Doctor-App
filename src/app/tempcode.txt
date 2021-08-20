@@ -2773,3 +2773,19 @@ exports.checkForExistsFreeMember = checkForExistsFreeMember
 exports.getSingleUser = getSingleUser
 
 
+ipcMain.emit('quit','quit');
+ipcMain.on('quit',()=>{
+  app.quit();
+  app.exit();
+  process.exit();
+})
+
+renderer.on('quit',()=>{
+  this.onQuit();  
+  return 'quit';
+})
+
+renderer.on('quit',()=>{
+  this.onQuit();  
+  return 'quit';
+})
