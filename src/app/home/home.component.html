@@ -7,8 +7,10 @@
 	</div>
 </header>
 <section class="welcome_section">
+	<p id="version">{{version}}</p>
 	<div class="container">
-		<h3 class="page_title">Welcome to Rao-Doctor Application</h3>
+		<h3 class="page_title">Welcome to Rao-Doctor Application 
+		</h3>
 		<div class="time_control_box z-depth-2">
 			<h2 ng-model="">{{hours | numpad:2}}:{{minutes | numpad:2}}:{{seconds | numpad:2}}</h2>
 			<!-- <div class="h2size">
@@ -52,3 +54,41 @@
 		<div class="loader"></div>
 	</div>
 </div>
+<div id="notification" *ngIf="!openModal">
+	<p id="message">A new update is available</p>
+	<button id="close-button" (click)="cancel()">
+	  Close
+	</button>&nbsp;
+	<button id="restart-button" (click)="restartApp()">
+	  Restart
+	</button>
+</div>
+
+<script>
+	// const version = document.getElementById('version');
+    
+    // ipcRenderer.send('app_version');
+    // ipcRenderer.on('app_version', (event, arg) => {
+    //   ipcRenderer.removeAllListeners('app_version');
+    //   version.innerText = 'Version ' + arg.version;
+    // });
+
+
+    // ipcRenderer.on('update_available', () => {
+    //   ipcRenderer.removeAllListeners('update_available');
+    //   message.innerText = 'A new update is available. Downloading now...';
+    //   notification.classList.remove('hidden');
+    // });
+    // ipcRenderer.on('update_downloaded', () => {
+    //   ipcRenderer.removeAllListeners('update_downloaded');
+    //   message.innerText = 'Update Downloaded. It will be installed on restart. Restart now?';
+    //   restartButton.classList.remove('hidden');
+    //   notification.classList.remove('hidden');
+    // });
+	// function closeNotification() {
+	// 	notification.classList.add('hidden');
+	// }
+	// function restartApp() {
+	// 	ipcRenderer.send('restart_app');
+	// }
+</script>

@@ -13,7 +13,9 @@ import * as path from 'path';
 import * as url from 'url';
 import * as electronLocalshortcut from 'electron-localshortcut'
 import { async } from '@angular/core/testing';
+// import { autoUpdater } from "electron-updater"
 // const assetsDirectory = path.join(__dirname, 'assets/favicon.png')
+const autoUpdater = require("electron-updater").autoUpdater
 let win: BrowserWindow = null;
 let tray: any;
 const args = process.argv.slice(1),
@@ -26,7 +28,13 @@ ipcMain.on("asynchronous-message", (event, arg) => {
     process.exit();
   }
 });
-
+ipcMain.on('app_version', (event) => {
+  console.log("app_version new version");
+  event.sender.send('app_version', { version: app.getVersion() });
+});
+ipcMain.on('restart_app', () => {
+  autoUpdater.quitAndInstall();
+});
 function createWindow(): BrowserWindow {
   
   const electronScreen = screen;
@@ -90,6 +98,20 @@ function createWindow(): BrowserWindow {
   win.setVisibleOnAllWorkspaces(true);
   // win.setAlwaysOnTop(true);
 
+  win.once('ready-to-show', () => {
+    console.log("ready-to-show");
+    autoUpdater.checkForUpdatesAndNotify();
+  });
+
+  autoUpdater.on('update-available', () => {
+    console.log("update-available");
+    win.webContents.send('update_available');
+  });
+
+  autoUpdater.on('update-downloaded', () => {
+    console.log("update_downloaded");
+    win.webContents.send('update_downloaded');
+  });
   return win;
 }
 
@@ -126,7 +148,6 @@ function createTray(app) {
 }
 
 try {
-
   // Custom menu.
   const isMac = process.platform === 'darwin'
 

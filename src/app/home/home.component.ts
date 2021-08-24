@@ -35,6 +35,8 @@ export class HomeComponent implements OnInit {
   handleError: any;
   timeString: any;
 
+  version: any;
+  openModal:Boolean = false;
   base64: any;
   diff: any;
   time: any;
@@ -79,6 +81,39 @@ export class HomeComponent implements OnInit {
     ) {
     this.fs = (window as any).fs;
     localStorage.setItem("isHomeComponent", "true");
+
+    ipcRenderer.send('app_version');
+    ipcRenderer.on('app_version', (event, arg) => {
+      ipcRenderer.removeAllListeners('app_version');
+      this.version = 'Version ' + arg.version;
+    });
+    ipcRenderer.on('update_available', () => {
+      ipcRenderer.removeAllListeners('update_available');
+      // message.innerText = 'A new update is available. Downloading now...';
+      // notification.classList.remove('hidden');
+      this.openModal = true;
+    });
+    ipcRenderer.on('update_downloaded', () => {
+      ipcRenderer.removeAllListeners('update_downloaded');
+      // message.innerText = 'Update Downloaded. It will be installed on restart. Restart now?';
+      // restartButton.classList.remove('hidden');
+      // notification.classList.remove('hidden');
+    });
+
+    // const notification = document.getElementById('notification');
+    // const message = document.getElementById('message');
+    // const restartButton = document.getElementById('restart-button');
+    // ipcRenderer.on('update_available', () => {
+    //   ipcRenderer.removeAllListeners('update_available');
+    //   message.innerText = 'A new update is available. Downloading now...';
+    //   notification.classList.remove('hidden');
+    // });
+    // ipcRenderer.on('update_downloaded', () => {
+    //   ipcRenderer.removeAllListeners('update_downloaded');
+    //   message.innerText = 'Update Downloaded. It will be installed on restart. Restart now?';
+    //   restartButton.classList.remove('hidden');
+    //   notification.classList.remove('hidden');
+    // });
 
     // ipcRenderer.on('quit', async()=>{
     //   await this.onQuit();
@@ -230,6 +265,13 @@ export class HomeComponent implements OnInit {
     });
 
   }
+  cancel(){
+		this.openModal = true;
+	}
+  restartApp() {
+    console.log("restart_app")
+		ipcRenderer.send('restart_app');
+	}
 
   send(arg) {
     ipcRenderer.send('asynchronous-message', arg);
@@ -1033,7 +1075,7 @@ export class HomeComponent implements OnInit {
         console.log("start switch");
         this.inActivityTimeInterval = setInterval(async () => {
           await this.calculateInactivityTime(userLogDetails, previousInActivityTime);
-        }, 1000);
+        }, 600000);
         let timeLogObject: any = {};
         timeLogObject = {
           in: logTime,
