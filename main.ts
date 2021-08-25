@@ -13,13 +13,18 @@ import * as path from 'path';
 import * as url from 'url';
 import * as electronLocalshortcut from 'electron-localshortcut'
 import { async } from '@angular/core/testing';
-// import { autoUpdater } from "electron-updater"
+import { autoUpdater } from "electron-updater";
+import log  from "electron-log";
+
+log.transports.file.file = 'logs.log'
 // const assetsDirectory = path.join(__dirname, 'assets/favicon.png')
-const autoUpdater = require("electron-updater").autoUpdater
+
 let win: BrowserWindow = null;
 let tray: any;
+
 const args = process.argv.slice(1),
-  serve = args.some(val => val === '--serve');
+serve = args.some(val => val === '--serve');
+
 ipcMain.on("asynchronous-message", (event, arg) => {
   if (arg === "tray") win.hide();
   if (arg === "quit"){
@@ -29,12 +34,20 @@ ipcMain.on("asynchronous-message", (event, arg) => {
   }
 });
 ipcMain.on('app_version', (event) => {
-  console.log("app_version new version");
+  console.log("app_version",app.getVersion());
+  log.info('app_version',app.getVersion());
+  
   event.sender.send('app_version', { version: app.getVersion() });
 });
-ipcMain.on('restart_app', () => {
-  autoUpdater.quitAndInstall();
-});
+// ipcMain.on('restart_app', () => {
+//   autoUpdater.quitAndInstall();
+// });
+
+function checkForUpdate(){
+  log.info("check for updates",  autoUpdater.checkForUpdates())
+  autoUpdater.checkForUpdates();
+}
+
 function createWindow(): BrowserWindow {
   
   const electronScreen = screen;
@@ -56,19 +69,23 @@ function createWindow(): BrowserWindow {
   // Disable refresh
   win.on('focus', (event) => {
     console.log("event of on fucous ");
+    log.info("event of on fucous");
     electronLocalshortcut.register(win, ['CommandOrControl+R', 'CommandOrControl+Shift+R', 'F5'], () => { })
   })
 
   win.on('blur', (event) => {
     console.log("event of on blue ");
+    log.info("event of on blue");
     electronLocalshortcut.unregisterAll(win)
   })
+
   if (serve) {
     require('electron-reload')(__dirname, {
       electron: require(`${__dirname}/node_modules/electron`)
     });
     win.loadURL('http://localhost:4200');
-  } else {
+  } 
+  else {
     win.loadURL(url.format({
       pathname: path.join(__dirname, 'dist/index.html'),
       protocol: 'file:',
@@ -98,19 +115,22 @@ function createWindow(): BrowserWindow {
   win.setVisibleOnAllWorkspaces(true);
   // win.setAlwaysOnTop(true);
 
-  win.once('ready-to-show', () => {
-    console.log("ready-to-show");
-    autoUpdater.checkForUpdatesAndNotify();
-  });
+  // win.once('ready-to-show', () => {
+  //   console.log("ready-to-show");
+  //   autoUpdater.checkForUpdates();
+  // });
 
   autoUpdater.on('update-available', () => {
     console.log("update-available");
+    log.info("update-available");
     win.webContents.send('update_available');
   });
 
   autoUpdater.on('update-downloaded', () => {
     console.log("update_downloaded");
+    log.info("update_downloaded");
     win.webContents.send('update_downloaded');
+    autoUpdater.quitAndInstall();
   });
   return win;
 }
@@ -148,6 +168,13 @@ function createTray(app) {
 }
 
 try {
+  autoUpdater.setFeedURL({
+    provider: 'github',
+    owner: 'TirthrajRao',
+    repo: 'Time-Doctor-App'
+    // token: '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',
+    // private: false,
+  });
   // Custom menu.
   const isMac = process.platform === 'darwin'
 
@@ -198,6 +225,10 @@ try {
       // })
       createWindow();
       createTray(app);
+      checkForUpdate();
+      setInterval(() => {
+        checkForUpdate();
+      }, 60000);
     })
   }
 

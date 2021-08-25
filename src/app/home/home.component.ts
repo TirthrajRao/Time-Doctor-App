@@ -84,16 +84,19 @@ export class HomeComponent implements OnInit {
 
     ipcRenderer.send('app_version');
     ipcRenderer.on('app_version', (event, arg) => {
+      console.log("app version",arg.version)
       ipcRenderer.removeAllListeners('app_version');
       this.version = 'Version ' + arg.version;
     });
     ipcRenderer.on('update_available', () => {
+      console.log("update available");
       ipcRenderer.removeAllListeners('update_available');
       // message.innerText = 'A new update is available. Downloading now...';
       // notification.classList.remove('hidden');
       this.openModal = true;
     });
     ipcRenderer.on('update_downloaded', () => {
+      console.log("update downloaded");
       ipcRenderer.removeAllListeners('update_downloaded');
       // message.innerText = 'Update Downloaded. It will be installed on restart. Restart now?';
       // restartButton.classList.remove('hidden');

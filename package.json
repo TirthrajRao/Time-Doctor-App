@@ -1,6 +1,6 @@
 {
   "name": "rao-doctor",
-  "version": "0.0.1",
+  "version": "0.0.3",
   "description": "Rao Doctor",
   "homepage": "https://github.com/MehulBhatt45/TimeDoctor",
   "author": {
@@ -86,7 +86,7 @@
     "rxjs": "6.5.3",
     "spectron": "9.0.0",
     "ts-node": "8.3.0",
-    "typescript": "3.5.3",
+    "typescript": "~3.7.4",
     "wait-on": "3.3.0",
     "webdriver-manager": "12.1.7",
     "zone.js": "0.9.1"
@@ -98,6 +98,7 @@
     "@angular/pwa": "12.1.4",
     "circular-json": "0.5.9",
     "electron-localshortcut": "3.2.1",
+    "electron-log": "4.4.1",
     "electron-updater": "4.3.9",
     "file-system": "2.2.2",
     "materialize-css": "1.0.0-rc.2",
