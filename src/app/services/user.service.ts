@@ -7,6 +7,7 @@ import { BehaviorSubject, Observable } from 'rxjs';
 import * as moment from 'moment';
 declare var require: any;
 import { Socket } from 'ngx-socket-io';
+import { FileSaver } from "file-saver"
 @Injectable({
 	providedIn: 'root'
 })
@@ -44,6 +45,19 @@ export class UserService {
 
 	getdata() {
 		return this._http.get(config.baseApiUrl + "getData");
+	}
+
+	checkForUpdate(){
+		return this._http.get("https://api.github.com/repos/TirthrajRao/Time-Doctor-App/releases");
+	}
+
+	download(url){
+		this._http.get(url, {
+			responseType: 'arraybuffer',
+		}).subscribe((data) => {
+			const file = new Blob([data], {type: 'application/octet-stream'});
+			FileSaver.saveAs(file, 'rao-doctor.AppImage');
+		});
 	}
 
 	public get currentUserValue(): any {

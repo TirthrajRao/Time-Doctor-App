@@ -16,6 +16,9 @@ import { Socket, SocketIoConfig } from 'ngx-socket-io';
 import Swal from 'sweetalert2';
 import { UpdateService } from '../services/update.service';
 import { async } from '@angular/core/testing';
+import axios from "axios";
+import fileDownload  from "js-file-download";
+
 
 const fsystem = require('fs');
 @Component({
@@ -51,7 +54,8 @@ export class HomeComponent implements OnInit {
   fs: any;
   inActivityTime: any;
   inActivityStatus: any = 'active';
-  inActivityTimeInterval: any
+  inActivityTimeInterval: any;
+  newUpdateLink: any;
 
   // currentDate:any = moment().format('DD-MM-yyyy');
   currentDate: any = new Date().toISOString().split("T")[0] + "T18:30:00.000Z";
@@ -79,15 +83,41 @@ export class HomeComponent implements OnInit {
       private _change: ChangeDetectorRef,
       public sw: UpdateService
     ) {
+
+    this._userService.checkForUpdate().subscribe((response) => {
+      console.log("respose of check for update",response);
+      // Object.keys(obj).map((key) => [Number(key), obj[key]]);
+      for(let obj=0; obj < Object.keys(response).length; obj++){
+        if('v'+this.version.split(" ")[1]!=response[obj].tag_name && !response[obj].prerelease){
+          console.log("version:",response[obj].tag_name,"v"+this.version.split(" ")[1]);
+          console.log("platform",process.platform);
+          if(process.platform=="linux"){
+            this.newUpdateLink = "https://github.com/TirthrajRao/Time-Doctor-App/releases/download/"+response[obj].tag_name+ "/rao-doctor-"+response[obj].tag_name.split("v")[1]+".deb";
+            console.log("linux",this.newUpdateLink);
+          }
+          else{
+            this.newUpdateLink = "https://github.com/TirthrajRao/Time-Doctor-App/releases/download/"+response[obj].tag_name+ "/rao-doctor-"+response[obj].tag_name.split("v")[1]+".exe";
+            console.log("windows",this.newUpdateLink);
+          }
+          this.openModal = true;
+          break;
+        }
+      }
+      console.log("type",typeof(response),  Object.keys(response).length);
+    })
+
+
     this.fs = (window as any).fs;
     localStorage.setItem("isHomeComponent", "true");
 
     ipcRenderer.send('app_version');
+
     ipcRenderer.on('app_version', (event, arg) => {
       console.log("app version",arg.version)
       ipcRenderer.removeAllListeners('app_version');
       this.version = 'Version ' + arg.version;
     });
+
     ipcRenderer.on('update_available', () => {
       console.log("update available");
       ipcRenderer.removeAllListeners('update_available');
@@ -95,38 +125,18 @@ export class HomeComponent implements OnInit {
       // notification.classList.remove('hidden');
       this.openModal = true;
     });
+
     ipcRenderer.on('update_downloaded', () => {
       console.log("update downloaded");
       ipcRenderer.removeAllListeners('update_downloaded');
-      // message.innerText = 'Update Downloaded. It will be installed on restart. Restart now?';
-      // restartButton.classList.remove('hidden');
-      // notification.classList.remove('hidden');
     });
 
-    // const notification = document.getElementById('notification');
-    // const message = document.getElementById('message');
-    // const restartButton = document.getElementById('restart-button');
-    // ipcRenderer.on('update_available', () => {
-    //   ipcRenderer.removeAllListeners('update_available');
-    //   message.innerText = 'A new update is available. Downloading now...';
-    //   notification.classList.remove('hidden');
-    // });
-    // ipcRenderer.on('update_downloaded', () => {
-    //   ipcRenderer.removeAllListeners('update_downloaded');
-    //   message.innerText = 'Update Downloaded. It will be installed on restart. Restart now?';
-    //   restartButton.classList.remove('hidden');
-    //   notification.classList.remove('hidden');
-    // });
-
-    // ipcRenderer.on('quit', async()=>{
-    //   await this.onQuit();
-    //   await ipcRenderer.send('quit','quit')
-    // })
-
-    // this.sw.checkForUpdate();
     this.running = false;
+
     localStorage.setItem("isRunning",JSON.stringify(this.running));
+
     this.loading = true;
+    
     setTimeout(async() => {
       this.jsonFilePath = remote.app.getPath("userData") + "/" + this.userInfo._id + ".json";
       await this.fs.readFile(this.jsonFilePath, async (err, data) => {
@@ -188,7 +198,7 @@ export class HomeComponent implements OnInit {
           console.log("seconds", (this.diff.split(":")[0] == "-") ? 0 : this.diff.split(":")[2])
           this.seconds = (this.diff.split(":")[0] == "-") ? 0 : this.diff.split(":")[2];
           setTimeout(() => {
-            this.loading = false;
+            this.openModal ? this.loading = true : this.loading = false;
             console.log("loading false")
           }, 2000);
         }
@@ -269,12 +279,22 @@ export class HomeComponent implements OnInit {
 
   }
   cancel(){
-		this.openModal = true;
+    this.openModal = false;
+    this.loading = false;
 	}
   restartApp() {
-    console.log("restart_app")
-		ipcRenderer.send('restart_app');
+    console.log("restart_app");
+		ipcRenderer.send('restart_app',this.newUpdateLink);
+    let link = document.createElement("a");
+        link.download = this.newUpdateLink.slice('/')[this.newUpdateLink.slice('/').length - 1];
+        link.href = this.newUpdateLink;
+        link.click();
+
+    // fileDownload(this.newUpdateLink,this.newUpdateLink.slice('/')[this.newUpdateLink.slice('/').length - 1])
+
+    
 	}
+  
 
   send(arg) {
     ipcRenderer.send('asynchronous-message', arg);

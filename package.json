@@ -1,6 +1,6 @@
 {
   "name": "rao-doctor",
-  "version": "0.0.3",
+  "version": "0.0.2",
   "description": "Rao Doctor",
   "homepage": "https://github.com/MehulBhatt45/TimeDoctor",
   "author": {
@@ -71,7 +71,7 @@
     "electron-reload": "1.5.0",
     "eslint": "6.6.0",
     "eslint-plugin-import": "2.18.2",
-    "file-saver": "^2.0.2",
+    "file-saver": "2.0.5",
     "jasmine-core": "3.4.0",
     "jasmine-spec-reporter": "4.2.1",
     "jquery": "^3.5.1",
@@ -96,14 +96,20 @@
   },
   "dependencies": {
     "@angular/pwa": "12.1.4",
+    "axios": "0.21.1",
     "circular-json": "0.5.9",
+    "electron-dl": "3.2.1",
+    "electron-download-manager": "2.1.2",
     "electron-localshortcut": "3.2.1",
     "electron-log": "4.4.1",
     "electron-updater": "4.3.9",
     "file-system": "2.2.2",
+    "js-file-download": "0.4.12",
     "materialize-css": "1.0.0-rc.2",
     "ngx-socket-io": "3.2.0",
+    "shelljs": "0.8.4",
     "socket.io": "2.3.0",
+    "sudo-prompt": "9.2.1",
     "sweetalert2": "10.10.4"
   }
 }

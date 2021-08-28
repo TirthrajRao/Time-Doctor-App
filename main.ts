@@ -15,7 +15,34 @@ import * as electronLocalshortcut from 'electron-localshortcut'
 import { async } from '@angular/core/testing';
 import { autoUpdater } from "electron-updater";
 import log  from "electron-log";
+import { HttpClient, HttpHeaders } from '@angular/common/http';
+import  { download } from 'electron-dl';
 
+// install latest release
+
+// import cp from 'child_process';
+// import shell  from "shelljs";
+
+// var sudo = require('sudo-prompt');
+// 	var options = {
+// 		name: 'Rao Doctor',
+// 		icns: '/Applications/Electron.app/Contents/Resources/Electron.icns', // (optional)
+// 	};
+// 	sudo.exec('dpkg -i '+ path.join(__dirname, 'rao-doctor-0.0.3.deb'), options,
+// 		(error, stdout, stderr) =>{
+
+// 			if (error) throw error;
+// 			log.info('stderr: '  + stderr);
+// 			log.info('stdout: '  + stdout);
+// 			//mainfunction();
+// 		}
+    
+// 	);
+
+let ep = path.dirname (process.execPath);
+log.info("path",ep);
+
+console.log("path console",ep);
 log.transports.file.file = 'logs.log'
 // const assetsDirectory = path.join(__dirname, 'assets/favicon.png')
 
@@ -39,14 +66,19 @@ ipcMain.on('app_version', (event) => {
   
   event.sender.send('app_version', { version: app.getVersion() });
 });
-// ipcMain.on('restart_app', () => {
-//   autoUpdater.quitAndInstall();
-// });
+ipcMain.on('restart_app', async (event, url) => {
+  log.info("logurl:",url);
+ 	// const win2 = BrowserWindow.getFocusedWindow();
+ 	// console.log(await download(win2, url));
+  //  log.info(await download(win2, url));
+});
 
-function checkForUpdate(){
-  log.info("check for updates",  autoUpdater.checkForUpdates())
-  autoUpdater.checkForUpdates();
-}
+// function checkForUpdate(){
+//   autoUpdater.setFeedURL('https://api.github.com/repos/TirthrajRao/Time-Doctor-App/releases');
+  
+//   log.info("check for updates",  autoUpdater.checkForUpdates())
+//   autoUpdater.checkForUpdates();
+// }
 
 function createWindow(): BrowserWindow {
   
@@ -92,7 +124,7 @@ function createWindow(): BrowserWindow {
       slashes: true
     }));
     // debug
-    // win.webContents.openDevTools()
+    win.webContents.openDevTools()
   }
 
   if (serve) {
@@ -120,18 +152,18 @@ function createWindow(): BrowserWindow {
   //   autoUpdater.checkForUpdates();
   // });
 
-  autoUpdater.on('update-available', () => {
-    console.log("update-available");
-    log.info("update-available");
-    win.webContents.send('update_available');
-  });
+  // autoUpdater.on('update-available', () => {
+  //   console.log("update-available");
+  //   log.info("update-available");
+  //   win.webContents.send('update_available');
+  // });
 
-  autoUpdater.on('update-downloaded', () => {
-    console.log("update_downloaded");
-    log.info("update_downloaded");
-    win.webContents.send('update_downloaded');
-    autoUpdater.quitAndInstall();
-  });
+  // autoUpdater.on('update-downloaded', () => {
+  //   console.log("update_downloaded");
+  //   log.info("update_downloaded");
+  //   win.webContents.send('update_downloaded');
+  //   autoUpdater.quitAndInstall();
+  // });
   return win;
 }
 
@@ -168,13 +200,14 @@ function createTray(app) {
 }
 
 try {
-  autoUpdater.setFeedURL({
-    provider: 'github',
-    owner: 'TirthrajRao',
-    repo: 'Time-Doctor-App'
-    // token: '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',
-    // private: false,
-  });
+  // autoUpdater.setFeedURL({
+  //   provider: 'github',
+  //   owner: 'TirthrajRao',
+  //   repo: 'Time-Doctor-App'
+  //   // token: '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',
+  //   // private: false,
+  // });
+  // autoUpdater.setFeedURL('https://api.github.com/repos/TirthrajRao/Time-Doctor-App/releases');
   // Custom menu.
   const isMac = process.platform === 'darwin'
 
@@ -225,10 +258,10 @@ try {
       // })
       createWindow();
       createTray(app);
-      checkForUpdate();
-      setInterval(() => {
-        checkForUpdate();
-      }, 60000);
+      // checkForUpdate();
+      // setInterval(() => {
+      //   // checkForUpdate();
+      // }, 60000);
     })
   }
 
